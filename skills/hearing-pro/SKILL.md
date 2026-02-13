@@ -70,6 +70,16 @@ See [references/question-bank.md](references/question-bank.md) for domain-specif
 - If the user gives long answers, summarize and confirm before continuing
 - Run **2-4 rounds** of questions; stop when diminishing returns are clear
 
+**Existing service check:**
+
+After the first round, invoke `researching-alternatives` for a lightweight scan of similar existing services. Present findings as:
+
+| Service | Can do | Can't do | Good for | Not good for |
+| --- | --- | --- | --- | --- |
+| Service A | ... | ... | ... | ... |
+
+Then ask: "These exist already — does any of them solve your problem, or is there a gap you want to fill?"
+
 ### Step 3: Crystallize
 
 Synthesize everything into a **Product Brief** draft and present it to the user.

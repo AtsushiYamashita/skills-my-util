@@ -196,8 +196,15 @@ foreach ($skill in $skillDirs) {
                 continue
             }
         }
-        New-Item -ItemType SymbolicLink -Path $linkPath -Target $skill.FullName | Out-Null
-        Write-Host "  Linked: $($skill.Name) -> $($skill.FullName)" -ForegroundColor Green
+        try {
+            New-Item -ItemType SymbolicLink -Path $linkPath -Target $skill.FullName | Out-Null
+            Write-Host "  Linked: $($skill.Name) -> $($skill.FullName)" -ForegroundColor Green
+        }
+        catch {
+            # シンボリックリンク失敗時はコピーにフォールバック
+            Copy-Item -Path $skill.FullName -Destination $linkPath -Recurse -Force
+            Write-Host "  Copied (symlink failed): $($skill.Name)" -ForegroundColor Cyan
+        }
     }
 }
 

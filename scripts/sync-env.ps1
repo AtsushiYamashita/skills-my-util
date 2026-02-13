@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     skills-my-util の rules/workflows/GEMINI.md を ~/.gemini/ および各ワークスペースに配布する
 

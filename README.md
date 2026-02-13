@@ -40,27 +40,27 @@ flowchart TB
 
 ```mermaid
 flowchart LR
-    subgraph 🧭 計画
-        hearing-pro
-        designing-architecture
-        dev-foundation
+    subgraph plan["🧭 計画"]
+        A1[hearing-pro]
+        A2[designing-architecture]
+        A3[dev-foundation]
     end
 
-    subgraph ⚙️ 実行
-        orchestrating-agents
-        enforcing-code-standards
-        change-sync
+    subgraph exec["⚙️ 実行"]
+        B1[orchestrating-agents]
+        B2[enforcing-code-standards]
+        B3[change-sync]
     end
 
-    subgraph 🔎 検証
-        reviewing-safety
-        debugging-systematic
-        checking-cross-platform
+    subgraph verify["🔎 検証"]
+        C1[reviewing-safety]
+        C2[debugging-systematic]
+        C3[checking-cross-platform]
     end
 
-    subgraph 📊 管理
-        task-coordination
-        researching-alternatives
+    subgraph mgmt["📊 管理"]
+        D1[task-coordination]
+        D2[researching-alternatives]
     end
 ```
 
@@ -89,6 +89,7 @@ sequenceDiagram
 
     Note over A,C: 完了
     A->>C: done + evidence
+```
 
 ## セットアップ
 

@@ -55,13 +55,11 @@ gh issue create --title "<task>" --body "<acceptance criteria>" --label "status:
 
 ### Step 2: Label
 
-Use a consistent label taxonomy:
+Labels are for **classification and notifications**, not state management. State is tracked in CozoDB.
+See [docs/task-state-boundary.md](../../docs/task-state-boundary.md) for the full design.
 
-| Label | Meaning |
+| Label | Purpose |
 | --- | --- |
-| `status:planned` | Not yet started |
-| `status:in-progress` | Being worked on |
-| `status:blocked` | Waiting on something |
 | `blocked:human` | **Human action required** — name who and what in a comment |
 | `blocked:external` | Waiting on external dependency |
 | `critical-path` | Delay here delays everything |
@@ -69,17 +67,22 @@ Use a consistent label taxonomy:
 
 Create labels if they don't exist. See [references/gh-commands.md](references/gh-commands.md) for setup commands.
 
+> **廃止済み**: `status:planned`, `status:in-progress`, `status:blocked` — GitHub の Open/Closed + CozoDB が代替。
+
 ### Step 3: Execute
 
 When starting work on a task:
 
-1. Assign yourself and set `status:in-progress`
-2. Work the task
-3. On completion: close the issue with a comment summarizing what was done
-4. If blocked: set `status:blocked` + appropriate `blocked:*` label + comment explaining what's needed
+1. worktree を作成: `git worktree add ../{repo}-feat-issue-<number> -b feat/issue-<number>`
+2. Assign yourself and set `status:in-progress`
+3. Work the task
+4. On completion: Draft PR を作成 → close the issue → `git worktree remove`
+5. If blocked: set `status:blocked` + appropriate `blocked:*` label + comment explaining what's needed
 
-```
-gh issue edit <number> --add-label "status:in-progress" --remove-label "status:planned"
+```bash
+# worktree を作成（メインディレクトリは常に main）
+git worktree add ../{repo}-feat-issue-<number> -b feat/issue-<number>
+
 gh issue close <number> --comment "Done: <summary>"
 ```
 
@@ -87,30 +90,31 @@ gh issue close <number> --comment "Done: <summary>"
 
 On every session start, check for existing project state:
 
-```
-gh issue list --label "status:in-progress" --json number,title,assignees
-gh issue list --label "status:blocked" --json number,title,labels
-gh issue list --label "critical-path" --state open --json number,title
+```bash
+gh issue list --state open --json number,title,labels
+gh issue list --label "blocked:human" --json number,title
 ```
 
-**If in-progress issues exist with no recent activity** — the previous session likely crashed. Resume from the last known state.
+**If open issues exist** — check CozoDB for detailed status (if available).
 
 **If blocked:human issues exist** — surface them immediately to the user.
 
-### CozoDB State Layer
+### CozoDB State Layer（強化レイヤー、オプショナル）
 
-GitHub Issues = **計画**（何をやるか）。CozoDB = **実行状態**（実際にどうなったか）。
+GitHub Issues = **タスク定義**（Open/Closed）。CozoDB = **実行状態 + 遷移ログ**。
+
+境界の詳細は [docs/task-state-boundary.md](../../docs/task-state-boundary.md) を参照。
 
 タスクの状態遷移は CozoDB `tasks` / `task_transitions` に記録する。詳細は `.agent/rules/task-state.md` を参照。
 
-Session Sync 時は GitHub Issues **と** CozoDB 両方を確認する。CozoDB に `in_progress` のまま残っているタスクがあれば、ユーザーにサーフェスする。
+Session Sync 時はまず GitHub Issues を確認し、CozoDB が利用可能なら詳細状態も確認する。
 
 ## Bottleneck Detection
 
 After Step 1 or when updating tasks, review the dependency chain:
 
 - Identify tasks where **human approval** gates downstream work → label `blocked:human` + `critical-path`
-- Suggest **parallel work** — tasks that don't depend on the blocked item
+- Suggest **parallel work** — tasks that don't depend on the blocked item（各タスクは別 worktree で作業）
 - Ask the user: "These items are waiting on you: [list]. Can you unblock any now?"
 
 ## Anti-Patterns

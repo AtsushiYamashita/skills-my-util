@@ -135,7 +135,13 @@ Goal: Build exactly what was approved.
 - Follow the approved design — do not deviate
 - Work in small, verifiable increments
 - Invoke `enforcing-code-standards` and `checking-cross-platform` as needed
-- **Output**: Working code + commit(s)
+- **Output**: Working code + commit(s) + Draft PR
+
+**Git 運用:**
+
+- `git worktree add` で作業ディレクトリを作成（メインディレクトリは常に main）
+- 1 worktree = 1 ブランチ = 1 目的
+- 実装完了後は Draft PR を作成 → `git worktree remove` で片付ける
 
 ### Phase 7: Verification (Eval)
 

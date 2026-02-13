@@ -36,51 +36,17 @@ AI エージェント用のスキルを一元管理し、Claude Code / Gemini CL
 
 ## スキル一覧
 
-### [change-sync](skills/change-sync/)
+| スキル                                                       | 概要                                               | 起動条件                                  |
+| ------------------------------------------------------------ | -------------------------------------------------- | ----------------------------------------- |
+| [change-sync](skills/change-sync/)                           | ファイル変更を `.change-sync.yml` ルールで自動伝播 | ファイル間同期ルールの定義・実行時        |
+| [researching-alternatives](skills/researching-alternatives/) | 実装前に類似ツール・アプローチを調査・比較         | 新規技術選定、既存代替の検証時            |
+| [checking-cross-platform](skills/checking-cross-platform/)   | OS/シェル/バージョン互換性チェック                 | スクリプト・ドキュメント・CI 設定の作成時 |
+| [enforcing-code-standards](skills/enforcing-code-standards/) | コード品質・ロギング・型安全・コミット規約         | コードの作成・レビュー時                  |
+| [designing-architecture](skills/designing-architecture/)     | ドメイン駆動・オニオン・インターフェース・Spike    | プロジェクト・モジュール設計時            |
+| [reviewing-safety](skills/reviewing-safety/)                 | 環境安全・爆発半径・多層防御・テスト戦略           | セキュリティレビュー・テスト設計時        |
+| [orchestrating-agents](skills/orchestrating-agents/)         | Supervisor/Worker パターンで6フェーズ委任          | 複数関心事にまたがる非自明なタスク        |
 
-プロジェクト内のファイル変更を宣言的ルール (`.change-sync.yml`) に基づいて自動伝播するスキル。
-
-**ユースケース:**
-
-- `package.json` の version 変更 → `src/version.ts`, `README.md` に同期
-- DB スキーマ変更 → TypeScript 型定義を再生成
-- 翻訳元ファイル変更 → 他言語ファイルに未翻訳フラグを追加
-
-### [researching-alternatives](skills/researching-alternatives/)
-
-新しいものを作る前に、類似プロダクト・ツール・アプローチを調査・比較するスキル。
-
-**ユースケース:**
-
-- 新規プロジェクトの技術選定（フレームワーク、ライブラリ比較）
-- 既存ツールで代替できないか事前検証
-- トレードオフ表による定量的比較と意思決定記録
-
-### [checking-cross-platform](skills/checking-cross-platform/)
-
-コード・スクリプト・ドキュメントの OS/シェル/バージョン互換性をチェックするスキル。
-
-**ユースケース:**
-
-- PowerShell 5.x vs 7+ の構文差異検出（`Join-Path` 3引数問題等）
-- README のインストール手順を複数プラットフォーム対応に
-- CI/CD の OS マトリクス設定チェック
-
-### [enforcing-code-standards](skills/enforcing-code-standards/)
-
-コード品質・ロギング・TypeScript 型安全・関数型スタイル・Conventional Commits を強制するスキル。GEMINI.md Principle V-A/V-B から抽出。
-
-### [designing-architecture](skills/designing-architecture/)
-
-ドメイン駆動設計・オニオンアーキテクチャ・インターフェース設計・Spike Before Commit を案内。GEMINI.md Principle V-C から抽出。
-
-### [reviewing-safety](skills/reviewing-safety/)
-
-環境安全・爆発半径最小化・多層防御・テストピラミッド戦略。GEMINI.md Principle V-D/V-E から抽出。
-
-### [orchestrating-agents](skills/orchestrating-agents/)
-
-Supervisor/Worker パターンでタスクを分解・委任するスキル。ヒアリング→設計→レビューボード（工学・ドメイン・セキュリティ3視点）→修正→ユーザー承認→実装→検証の6フェーズ。
+各スキルの詳細は `skills/<skill-name>/README.md` を参照してください。
 
 ## ディレクトリ構造
 

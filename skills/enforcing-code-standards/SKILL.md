@@ -38,6 +38,20 @@ When proposing a command for user approval:
 - **Before the command**, explain in Japanese: what it does, why it's needed, and what it changes
 - Keep the explanation to **1-2 lines** — the user needs to decide quickly
 
+**SafeToAutoRun classification:**
+
+| Auto-run ✅ | Require approval ❌ |
+| --- | --- |
+| `git status`, `git diff`, `git log` | `git commit`, `git push`, `git reset` |
+| `git add` (staging only) | `git checkout`, `git rebase` |
+| `ls`, `cat`, `head`, `tail`, `find`, `grep` | `rm`, `del`, `Move-Item` |
+| `mkdir`, `New-Item -Directory` | `npm install`, `pip install` |
+| `npm run lint`, `npm run test` | `npm run build`, `npm run deploy` |
+| `gh issue list`, `gh pr list` | `gh issue create`, `gh pr create` |
+| `Get-Content`, `Test-Path` | Any command with `--force` |
+
+When in doubt, require approval.
+
 ### Persist Context
 
 Use available memory/persistence tools to store user context. Prevent repetitive re-explanation.

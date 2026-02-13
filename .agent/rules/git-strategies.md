@@ -7,6 +7,23 @@
 - **読める**: diff を見て「何をしたか」が30秒で分かる
 - **戻せる**: このコミットだけ revert しても壊れない
 - **説明できる**: コミットメッセージが1行で書ける
+- **意図がある**: Why（なぜこの変更か）を書く。What だけでは不十分
+
+### コミットメッセージのフォーマット
+
+```
+type(scope): what
+
+Why: なぜこの変更が必要か（1-2行）
+```
+
+例:
+
+```
+feat(git): add pre-commit branch check rule
+
+Why: エージェントが main に直接コミットする習慣を構造的に防止する
+```
 
 ### やるべき分割
 
@@ -25,17 +42,30 @@
 
 ## Branch Strategy（ブランチ運用）
 
-### 基本ルール
+### 最重要ルール
+
+**main は受け取るだけ。変更は常に外で始める。**
 
 ```
-main ← 常に動く状態
+main ← マージだけ。直接コミットしない
  └── feat/xxx ← 機能開発
  └── fix/xxx ← バグ修正
+ └── docs/xxx ← ドキュメント
 ```
 
-1. **作業開始前**にブランチを切る
+### 手順
+
+1. **作業開始 → まずブランチを切る**: `git checkout -b feat/xxx`
 2. **1ブランチ = 1目的**（機能、修正、リファクタ）
-3. 完了したら main にマージ + ブランチ削除
+3. 完了 → **Draft PR を作成**（マージは人間が判断）
+4. レビュー後 → main にマージ + ブランチ削除
+5. main に直接コミットしていい例外: **typo 修正のみ**
+
+### Draft PR ルール
+
+- エージェントは **Draft PR のみ** 作成する。Ready にしない
+- PR 説明に「何をしたか」「なぜ」「テスト結果」を含める
+- マージは**人間が判断**する。エージェントはマージしない
 
 ### ブランチを切るタイミング
 
@@ -52,6 +82,23 @@ main ← 常に動く状態
 - [ ] コミット履歴が意味単位に分割されている
 - [ ] 不要なデバッグコードが残っていない
 
+## Pre-commit Check（コミット前に必ず実行）
+
+`git commit` を実行する前に、以下を**毎回**確認する：
+
+1. `git branch --show-current` で現在のブランチを確認
+2. main にいる → **コミットしない**。ブランチを切ってから再開
+3. ブランチ名と作業内容が一致しているか確認
+
+| 作業内容 | 正しいブランチ | 間違い |
+| --- | --- | --- |
+| 新機能追加 | `feat/add-xxx` | `main`, `fix/xxx` |
+| バグ修正 | `fix/resolve-xxx` | `main`, `feat/xxx` |
+| ドキュメント更新 | `docs/update-xxx` | `main` |
+| リファクタ | `refactor/xxx` | `main` |
+
+**ブランチ名が違う場合**: 作業を stash → 正しいブランチに移動 → stash pop
+
 ## Commit Timing（いつコミットするか）
 
 以下のタイミングで即コミット：
@@ -60,9 +107,42 @@ main ← 常に動く状態
 2. **方向転換する前** — 戻れるセーブポイントを作る
 3. **1つの作業単位が完了した**とき — 中途半端にしない
 
+## Multi-Agent: Git Worktree
+
+複数エージェントが同じリポジトリで並列作業する場合、**worktree** を使う。
+
+```powershell
+# Agent A: feat/skill-update を作業
+git worktree add ../skills-my-util-A feat/skill-update
+
+# Agent B: fix/setup-bug を作業
+git worktree add ../skills-my-util-B fix/setup-bug
+```
+
+### Worktree ルール
+
+| ルール | 理由 |
+| --- | --- |
+| 1 worktree = 1 ブランチ = 1 エージェント | コンテキスト混在を防ぐ |
+| 作業完了後は `git worktree remove` | ゴミを残さない |
+| main の worktree は作らない | main は受け取るだけ |
+| worktree 内で別ブランチに checkout しない | worktree の意味がなくなる |
+
+### 並列作業フロー
+
+```mermaid
+flowchart LR
+    M[main] -->|branch| A[feat/xxx\nAgent A]
+    M -->|branch| B[fix/yyy\nAgent B]
+    A -->|Draft PR| M
+    B -->|Draft PR| M
+```
+
 ## Anti-Patterns
 
 - ❌ ブランチを切らずに main で大規模変更
 - ❌ 動作確認前にコミット（壊れた状態を保存しない）
 - ❌ 長時間コミットしない（クラッシュ時にすべて失う）
 - ❌ WIP コミットを大量に積む（後でまとめることを前提にしない）
+- ❌ エージェントが PR をマージする（人間の判断を奪わない）
+- ❌ 1つの worktree で複数ブランチを切り替える

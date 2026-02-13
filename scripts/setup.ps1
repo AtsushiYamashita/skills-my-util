@@ -1,10 +1,10 @@
 <#
 .SYNOPSIS
-    Install skills from this monorepo to a target AI agent platform.
+    Manage skills from this monorepo for a target AI agent platform.
 
 .DESCRIPTION
-    Creates symlinks from skills/ to the target platform's skill discovery path.
-    Supports: claude-code, gemini-cli, antigravity.
+    Creates/removes symlinks from skills/ to the target platform's skill
+    discovery path. Supports: claude-code, gemini-cli, antigravity.
 
     Symlinks ensure that edits in this repo are immediately reflected in the
     target platform without manual copying.
@@ -13,15 +13,23 @@
     Target platform: claude-code, gemini-cli, or antigravity.
 
 .PARAMETER SkillNames
-    Optional. Specific skill names to install. If omitted, all skills are installed.
+    Optional. Specific skill names to install or remove.
+    If omitted with install: all skills are installed.
+    If omitted with -Remove: all symlinked skills are removed.
 
 .PARAMETER Remove
-    If specified, removes the symlinks instead of creating them.
+    Remove symlinks instead of creating them. Combine with -SkillNames to
+    remove specific skills only.
+
+.PARAMETER List
+    Show currently installed skills for the target platform.
 
 .EXAMPLE
-    .\scripts\setup.ps1 -Target gemini-cli
-    .\scripts\setup.ps1 -Target claude-code -SkillNames change-sync
-    .\scripts\setup.ps1 -Target antigravity -Remove
+    .\scripts\setup.ps1 -t antigravity                          # Install all
+    .\scripts\setup.ps1 -t antigravity -s change-sync           # Install one
+    .\scripts\setup.ps1 -t antigravity -List                    # Show installed
+    .\scripts\setup.ps1 -t antigravity -Remove -s ui-ux-pro-max # Remove one
+    .\scripts\setup.ps1 -t antigravity -Remove                  # Remove all
 #>
 param(
     [Parameter(Mandatory = $true, Position = 0)]
@@ -34,7 +42,11 @@ param(
     [string[]]$SkillNames,
 
     [Parameter()]
-    [switch]$Remove
+    [switch]$Remove,
+
+    [Parameter()]
+    [Alias("l")]
+    [switch]$List
 )
 
 Set-StrictMode -Version Latest                                           # 厳格モードで実行
@@ -51,20 +63,86 @@ $targetDir = $platformPaths[$Target]
 $repoSkillsDir = Join-Path (Join-Path $PSScriptRoot "..") "skills"       # このリポジトリの skills/ ディレクトリ
 $repoSkillsDir = (Resolve-Path $repoSkillsDir).Path
 
-# ---- Discover skills ----
-if ($SkillNames) {
+# ---- List mode ----
+if ($List) {
+    if (-not (Test-Path $targetDir)) {
+        Write-Host "No skills directory found for $Target" -ForegroundColor Yellow
+        Write-Host "Expected: $targetDir" -ForegroundColor DarkGray
+        exit 0
+    }
+
+    $items = Get-ChildItem -Path $targetDir -Directory -ErrorAction SilentlyContinue
+    if (-not $items -or $items.Count -eq 0) {
+        Write-Host "No skills installed for $Target" -ForegroundColor Yellow
+        exit 0
+    }
+
+    Write-Host ""
+    Write-Host "Installed skills for $Target" -ForegroundColor Cyan
+    Write-Host "Path: $targetDir" -ForegroundColor DarkGray
+    Write-Host ""
+
+    foreach ($item in $items) {
+        $isSymlink = $item.Attributes -band [IO.FileAttributes]::ReparsePoint
+        $hasSkillMd = Test-Path (Join-Path $item.FullName "SKILL.md")
+        $linkTarget = if ($isSymlink) { $item.Target } else { $null }
+
+        # Check if it's from this repo
+        $isLocal = $linkTarget -and $linkTarget.StartsWith($repoSkillsDir)
+
+        $icon = if ($isLocal) { "📦" } elseif ($isSymlink) { "🔗" } else { "📁" }
+        $source = if ($isLocal) { "monorepo" } elseif ($isSymlink) { "external" } else { "direct" }
+        $skillMdTag = if ($hasSkillMd) { "" } else { " [no SKILL.md]" }
+
+        Write-Host "  $icon $($item.Name)" -ForegroundColor White -NoNewline
+        Write-Host " ($source)$skillMdTag" -ForegroundColor DarkGray
+    }
+
+    $localCount = ($items | Where-Object { ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) -and $_.Target -and $_.Target.StartsWith($repoSkillsDir) }).Count
+    $externalCount = $items.Count - $localCount
+    Write-Host ""
+    Write-Host "Total: $($items.Count) skill(s) — $localCount monorepo, $externalCount other" -ForegroundColor Cyan
+    exit 0
+}
+
+# ---- Discover skills (install/remove) ----
+if ($Remove -and $SkillNames) {
+    # Per-skill removal: target specific skills in the target dir
+    $skillDirs = @()
+    foreach ($name in $SkillNames) {
+        $path = Join-Path $targetDir $name
+        if (-not (Test-Path $path)) {
+            Write-Warning "Not installed: $name"
+            continue
+        }
+        $skillDirs += Get-Item $path -Force
+    }
+}
+elseif ($Remove) {
+    # Remove all: find all symlinks in target dir
+    if (Test-Path $targetDir) {
+        $skillDirs = Get-ChildItem -Path $targetDir -Directory |
+        Where-Object { $_.Attributes -band [IO.FileAttributes]::ReparsePoint }
+    }
+    else {
+        $skillDirs = @()
+    }
+}
+elseif ($SkillNames) {
+    # Install specific skills from repo
     $skillDirs = @()
     foreach ($name in $SkillNames) {
         $path = Join-Path $repoSkillsDir $name
         if (-not (Test-Path $path)) {
-            Write-Error "Skill not found: $name (expected at $path)"
+            Write-Error "Skill not found in repo: $name (expected at $path)"
         }
         $skillDirs += Get-Item $path
     }
 }
 else {
-    $skillDirs = Get-ChildItem -Path $repoSkillsDir -Directory |         # skills/ 直下のディレクトリ全て
-    Where-Object { Test-Path (Join-Path $_.FullName "SKILL.md") }    # SKILL.md を持つものだけ
+    # Install all skills from repo
+    $skillDirs = Get-ChildItem -Path $repoSkillsDir -Directory |
+    Where-Object { Test-Path (Join-Path $_.FullName "SKILL.md") }
 }
 
 if ($skillDirs.Count -eq 0) {
@@ -74,16 +152,21 @@ if ($skillDirs.Count -eq 0) {
 
 # ---- Ensure target directory exists ----
 if (-not (Test-Path $targetDir)) {
-    New-Item -ItemType Directory -Path $targetDir -Force | Out-Null      # 配置先が無ければ作成
+    New-Item -ItemType Directory -Path $targetDir -Force | Out-Null
     Write-Host "Created target directory: $targetDir" -ForegroundColor Cyan
 }
 
 # ---- Process each skill ----
 foreach ($skill in $skillDirs) {
-    $linkPath = Join-Path $targetDir $skill.Name                         # symlink の配置先
-
     if ($Remove) {
         # ---- Remove mode ----
+        $linkPath = if ($skill.FullName.StartsWith($targetDir)) {
+            $skill.FullName                                              # Already a path in targetDir
+        }
+        else {
+            Join-Path $targetDir $skill.Name
+        }
+
         if (Test-Path $linkPath) {
             $item = Get-Item $linkPath -Force
             if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
@@ -100,6 +183,8 @@ foreach ($skill in $skillDirs) {
     }
     else {
         # ---- Install mode ----
+        $linkPath = Join-Path $targetDir $skill.Name
+
         if (Test-Path $linkPath) {
             $item = Get-Item $linkPath -Force
             if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {

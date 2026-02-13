@@ -4,19 +4,73 @@
 
 ## 概要
 
-このリポジトリは、AI エージェント用の小規模なスキルを一元管理するために設計されています。各スキルは `skills/` ディレクトリ配下に独立したディレクトリとして配置されます。
+AI エージェント用のスキルを一元管理し、Claude Code / Gemini CLI / Google Antigravity に対してセットアップできるリポジトリ。
+
+## セットアップ
+
+```powershell
+# 全スキルを Gemini CLI にインストール
+.\scripts\setup.ps1 -t gemini-cli
+
+# 特定のスキルだけ Claude Code にインストール
+.\scripts\setup.ps1 -t claude-code -Skills change-sync
+
+# Antigravity にインストール
+.\scripts\setup.ps1 -t antigravity
+
+# アンインストール
+.\scripts\setup.ps1 -t gemini-cli -Remove
+```
+
+> [!NOTE]
+> `setup.ps1` はシンボリックリンクを使用するため、リポジトリ内の編集が即座に反映されます。
+> Windows では管理者権限 or 開発者モードが必要です。
+
+### 対応プラットフォーム
+
+| Target        | Skill Path                                   |
+| ------------- | -------------------------------------------- |
+| `claude-code` | `~/.claude/skills/<skill-name>/`             |
+| `gemini-cli`  | `~/.gemini/skills/<skill-name>/`             |
+| `antigravity` | `~/.gemini/antigravity/skills/<skill-name>/` |
+
+## スキル一覧
+
+### [change-sync](skills/change-sync/)
+
+プロジェクト内のファイル変更を宣言的ルール (`.change-sync.yml`) に基づいて自動伝播するスキル。
+
+**ユースケース:**
+
+- `package.json` の version 変更 → `src/version.ts`, `README.md` に同期
+- DB スキーマ変更 → TypeScript 型定義を再生成
+- 翻訳元ファイル変更 → 他言語ファイルに未翻訳フラグを追加
 
 ## ディレクトリ構造
 
 ```
 skills-my-util/
-├── .agent/              # ワークスペース共有のエージェント設定
-│   ├── rules/          # 永続的ルール（.gitignore対象）
-│   └── workflows/      # 再利用可能なワークフロー
-├── skills/              # 全スキルの親ディレクトリ
-│   └── <skill-name>/   # 各スキル（SKILL.md 必須）
-├── docs/                # 共有ドキュメント・参考資料
-└── scripts/             # リポジトリ管理用スクリプト
+├── .agent/                 # エージェント設定
+│   ├── rules/             # 永続ルール
+│   │   ├── preflight-check.md    # 実行前チェック
+│   │   ├── skill-quality-gate.md # 品質ゲート
+│   │   └── git-strategies.md     # Git ルール
+│   └── workflows/
+│       └── new-skill.md   # /new-skill ワークフロー
+├── skills/                 # 全スキル
+│   └── <skill-name>/
+│       ├── SKILL.md       # スキル定義（必須）
+│       ├── references/    # 詳細仕様（任意）
+│       ├── scripts/       # ヘルパースクリプト（任意）
+│       └── examples/      # ルールサンプル（任意）
+├── docs/
+│   ├── skill-quality-guide.md  # 品質基準
+│   └── references.md          # 参考リンク集
+├── scripts/
+│   ├── setup.ps1          # マルチプラットフォーム セットアップ
+│   └── new-skill.ps1      # スキル雛形生成
+├── MEMORY/                 # セッションログ
+└── README.md
 ```
 
 ## 新しいスキルの作成
@@ -27,17 +81,11 @@ skills-my-util/
 
 または、エージェントから `/new-skill` ワークフローを使用してください。
 
-## スキル構造
+## 品質基準
 
-各スキルは以下の構造に従います:
+スキルは [Agent Skills 仕様](https://agentskills.io/specification) と [Anthropic Best Practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices) に準拠する必要があります。
 
-```
-skills/<skill-name>/
-├── SKILL.md       # スキル定義（必須）
-├── scripts/       # ヘルパースクリプト（任意）
-├── examples/      # 参考実装（任意）
-└── docs/          # スキル固有ドキュメント（任意）
-```
+詳細: [docs/skill-quality-guide.md](docs/skill-quality-guide.md)
 
 ## ライセンス
 

@@ -69,6 +69,11 @@ All exported items must include standard doc comments (JSDoc, docstrings, etc.):
 - Purpose, parameters with types, return value, thrown errors
 - Usage examples where non-obvious
 
+### Diagrams in Docs
+
+- Human-facing documents (README, design docs, ADRs): use **mermaid** — GitHub renders natively, structured and maintainable
+- Agent-facing files (SKILL.md): ASCII art is acceptable — renders inline as plain text in context
+
 ### Structured Logging
 
 See [references/logging-standards.md](references/logging-standards.md) for the full specification.

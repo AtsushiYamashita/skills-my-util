@@ -29,7 +29,14 @@ Propose the most reliable and reproducible method first, considering target OS, 
 
 ### Executable Scripts
 
-Provide multi-line commands as executable script files, not copy-paste blocks. Each line must include a trailing comment. State permanent changes the script makes (files, env vars, services, packages).
+Provide multi-line commands as executable script files, not copy-paste blocks. Each line must include a trailing comment **in Japanese**. State permanent changes the script makes (files, env vars, services, packages).
+
+### Command Proposal
+
+When proposing a command for user approval:
+
+- **Before the command**, explain in Japanese: what it does, why it's needed, and what it changes
+- Keep the explanation to **1-2 lines** — the user needs to decide quickly
 
 ### Persist Context
 

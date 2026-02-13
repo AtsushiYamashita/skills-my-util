@@ -74,26 +74,37 @@ flowchart LR
 ```mermaid
 sequenceDiagram
     participant A as Agent
+    participant GH as GitHub Issues
     participant C as CozoDB
     participant U as User
 
-    Note over A,C: Session Start
-    A->>C: 孤立タスク検出
-    A->>C: 判断パターン読込
+    Note over A,GH: Session Start
+    A->>GH: gh issue list --state open
+    A->>GH: blocked:human ラベル確認
 
-    Note over A,U: 作業中
-    A->>C: タスク登録 (in_progress)
-    A->>C: 予測可能？
-    alt 予測して実行
-        A->>U: 結果だけ報告
-    else 初見の判断
-        A->>U: 確認
-        U->>A: 回答
-        A->>C: 判断を記録
+    opt CozoDB available
+        A->>C: 孤立タスク検出
+        A->>C: 判断パターン読込
     end
 
-    Note over A,C: 完了
-    A->>C: done + evidence
+    Note over A,U: 作業中
+    opt CozoDB available
+        A->>C: タスク登録 (in_progress)
+        A->>C: 予測可能？
+        alt 予測して実行
+            A->>U: 結果だけ報告
+        else 初見の判断
+            A->>U: 確認
+            U->>A: 回答
+            A->>C: 判断を記録
+        end
+    end
+
+    Note over A,GH: 完了
+    A->>GH: Issue Close + comment
+    opt CozoDB available
+        A->>C: done + evidence
+    end
 ```
 
 ## セットアップ
@@ -147,6 +158,8 @@ sequenceDiagram
 | [checking-cross-platform](skills/checking-cross-platform/) | OS/シェル互換性 | スクリプト/CI |
 | [change-sync](skills/change-sync/) | 宣言的ファイル変更伝播 | ファイル同期 |
 
+> 📚 **設計ドキュメント**: [GitHub Issues vs CozoDB の境界](docs/task-state-boundary.md) — ラベルは「分類」、状態は CozoDB、なぜ二重管理を避けるか
+
 ### Rules（常時適用）
 
 | ルール | 内容 |
@@ -198,6 +211,7 @@ skills-my-util/
 │   ├── sync-env.ps1        # ルール/ワークフロー配布
 │   └── new-skill.ps1       # スキル雛形生成
 ├── docs/
+│   ├── task-state-boundary.md  # GitHub Issues vs CozoDB 境界
 │   ├── skill-quality-guide.md
 │   └── references.md
 └── MEMORY/                 # セッションログ

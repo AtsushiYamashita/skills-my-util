@@ -83,3 +83,23 @@ See [references/comparison-template.md](references/comparison-template.md) for t
 - Mention the strongest **alternative** and when to prefer it
 - Ask the user: "Is this the right direction?"
 - **Wait for confirmation before proceeding to implementation**
+
+**Step 6: Record the decision**
+
+After user confirms, save the comparison and decision as an ADR in `docs/decisions/`:
+
+```markdown
+# ADR-NNN: [Decision Title]
+
+## Context
+[Why this decision was needed]
+
+## Options Considered
+[Comparison table from Step 4]
+
+## Decision
+[Chosen option + rationale]
+
+## Trade-offs
+[What was given up by choosing this option]
+```

@@ -190,7 +190,6 @@ foreach ($skill in $skillDirs) {
             if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
                 # symlink が正しいリンク先を指しているか検証
                 if ($item.Target -eq $skill.FullName) {
-                    Write-Host "  Already linked: $($skill.Name)" -ForegroundColor DarkGray
                     continue
                 }
                 else {
@@ -248,23 +247,23 @@ if (-not $Remove) {
 }
 
 # ---- Git hooks ----
-$repoHooksDir = Join-Path (Join-Path $PSScriptRoot "..") "scripts\hooks"
-$repoHooksDir = (Resolve-Path $repoHooksDir -ErrorAction SilentlyContinue).Path
+$repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path              # リポジトリのルート
+$repoHooksDir = Join-Path $repoRoot "scripts\hooks"
 
-if ($repoHooksDir -and (Test-Path $repoHooksDir)) {
+if (Test-Path $repoHooksDir) {
     if ($Remove -and -not $SkillNames) {
         # Full remove: reset hooksPath
-        git config --unset core.hooksPath 2>$null
+        git -C $repoRoot config --unset core.hooksPath 2>$null
         Write-Host "  Reset: core.hooksPath" -ForegroundColor Yellow
     }
     elseif (-not $Remove) {
         # Install: set core.hooksPath to repo hooks
-        $currentHooksPath = git config --get core.hooksPath 2>$null
+        $currentHooksPath = git -C $repoRoot config --get core.hooksPath 2>$null
         if ($currentHooksPath -eq $repoHooksDir) {
-            Write-Host "  Already set: core.hooksPath" -ForegroundColor DarkGray
+            # 設定済み — スキップ
         }
         else {
-            git config core.hooksPath $repoHooksDir
+            git -C $repoRoot config core.hooksPath $repoHooksDir
             Write-Host "  Set: core.hooksPath -> $repoHooksDir" -ForegroundColor Green
         }
     }
@@ -291,7 +290,7 @@ if ($repoGeminiMd -and (Test-Path $repoGeminiMd)) {
         if (Test-Path $globalGeminiMd) {
             $item = Get-Item $globalGeminiMd -Force
             if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
-                Write-Host "  Already linked: GEMINI.md" -ForegroundColor DarkGray
+                # 設定済み — スキップ
             }
             else {
                 # Backup existing non-symlink GEMINI.md

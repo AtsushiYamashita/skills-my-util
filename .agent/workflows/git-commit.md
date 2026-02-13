@@ -30,22 +30,31 @@ git worktree add ../$(Split-Path -Leaf (Get-Location))-feat-xxx -b feat/xxx
 | ドキュメント | `docs/` |
 | リファクタ | `refactor/` |
 
+// turbo
+4. このブランチに既存の PR がある場合、**マージ/クローズ済みでないか**確認する
+
+```powershell
+gh pr list --head $(git branch --show-current) --state all --json number,state,title
+```
+
+**MERGED / CLOSED の場合 → このブランチにはコミットしない。** 新しいブランチを作成する。
+
 ## Commit
 
 // turbo
-4. 変更内容を確認する
+5. 変更内容を確認する
 
 ```powershell
 git status; git diff --stat
 ```
 
-5. 意味単位でステージングする（`git add .` は原則禁止）
+6. 意味単位でステージングする（`git add .` は原則禁止）
 
 ```powershell
 git add <file-or-directory>
 ```
 
-6. コミットメッセージを作成する（Conventional Commits + Why）
+7. コミットメッセージを作成する（Conventional Commits + Why）
 
 ```powershell
 git commit -m "type(scope): what" -m "Why: なぜこの変更が必要か"
@@ -54,14 +63,15 @@ git commit -m "type(scope): what" -m "Why: なぜこの変更が必要か"
 ## Post-commit
 
 // turbo
-7. ログを確認する
+8. ログを確認する
 
 ```powershell
 git log --oneline -3
 ```
 
-8. Draft PR を作成する（完了時）
+9. Draft PR を作成する（完了時）
 
 ```powershell
 gh pr create --draft --title "type(scope): what" --body "## What`n`n## Why`n`n## Testing"
 ```
+

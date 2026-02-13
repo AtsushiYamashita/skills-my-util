@@ -2,98 +2,93 @@
 
 AI エージェント用のスキル・ルール・ワークフローを一元管理するモノレポジトリ。
 
-## アーキテクチャ
+## セッション・ライフサイクル
+
+```mermaid
+flowchart LR
+    A((🚀 Start)) --> B[Pre-flight Sync]
+    B --> C{問題あり?}
+    C -->|孤立タスク| D[復帰 or 放棄]
+    C -->|構造不足| E[基盤構築]
+    C -->|なし| F[作業開始]
+    D --> F
+    E --> F
+    F --> G{タスク規模}
+    G -->|非自明| H[orchestrating-agents\n7フェーズ委任]
+    G -->|軽微| I[直接対応]
+    H --> J[/session-end/]
+    I --> J
+    J --> K((✅ End))
+```
+
+## Pre-flight でチェックする3つ
 
 ```mermaid
 flowchart TB
-    subgraph Always["常時適用 (.agent/rules/)"]
-        R1[command-execution]
-        R2[conventions]
-        R3[core-principles]
-        R4[goal-alignment]
-        R5[reasoning-first]
-        R6[task-state<br/>+ CozoDB]
-        R7[task-planning]
-        R8[self-correction]
-    end
+    PF[Pre-flight Sync] --> P1 & P2 & P3
 
-    subgraph Session["セッション境界"]
-        SE["/session-end"]
-    end
+    P1[🔍 CozoDB\ntasks テーブル]
+    P2[📋 GitHub Issues\nin-progress / blocked]
+    P3[🏗️ Workspace\nARCHITECTURE.md?]
 
-    subgraph Preflight["Pre-flight: Session Sync"]
-        PF1["gh issue list<br/>(in-progress/blocked)"]
-        PF2["CozoDB tasks<br/>(orphan detection)"]
-        PF3["user_decisions<br/>(prediction load)"]
-        PF4["Workspace check<br/>(ARCHITECTURE.md?)"]
-    end
-
-    subgraph Skills["条件付き活性化 (skills/)"]
-        direction LR
-        S1[orchestrating-agents<br/>非自明タスク]
-        S2[hearing-pro<br/>要件不明確]
-        S3[designing-architecture<br/>設計文書未整備]
-        S4[dev-foundation<br/>基盤未構築]
-        S5[enforcing-code-standards<br/>コード作成/レビュー]
-        S6[reviewing-safety<br/>セキュリティ]
-        S7[researching-alternatives<br/>技術選定]
-        S8[task-coordination<br/>複数参画者]
-        S9[debugging-systematic<br/>バグ調査]
-        S10[checking-cross-platform<br/>互換性]
-        S11[change-sync<br/>ファイル同期]
-    end
-
-    Start([セッション開始]) --> Preflight
-    Preflight --> |構造欠落| S3 & S4
-    Preflight --> |孤立タスク| S8
-    Preflight --> |問題なし| Work([作業開始])
-    Work --> |非自明| S1
-    Work --> |軽微| R1
-    S1 --> |Phase 1| S2
-    S1 --> |Phase 2| S3
-    S1 --> |Phase 5| S5
-    S1 --> |Phase 7| S6
-    Work --> |セッション終了| SE
+    P1 -->|in_progress 残存| R1[ユーザーに確認\n再開 or 放棄]
+    P2 -->|blocked:human| R2[ユーザーに即報告]
+    P3 -->|未整備| R3[designing-architecture\ndev-foundation 起動]
 ```
 
-## 起動フロー
+## スキル活性化マップ
+
+```mermaid
+flowchart LR
+    subgraph 🧭 計画
+        hearing-pro
+        designing-architecture
+        dev-foundation
+    end
+
+    subgraph ⚙️ 実行
+        orchestrating-agents
+        enforcing-code-standards
+        change-sync
+    end
+
+    subgraph 🔎 検証
+        reviewing-safety
+        debugging-systematic
+        checking-cross-platform
+    end
+
+    subgraph 📊 管理
+        task-coordination
+        researching-alternatives
+    end
+```
+
+## CozoDB データフロー
 
 ```mermaid
 sequenceDiagram
-    participant U as User
-    participant A as Agent (Supervisor)
+    participant A as Agent
     participant C as CozoDB
-    participant G as GitHub Issues
+    participant U as User
 
-    Note over A: Session Start
-    A->>C: tasks WHERE status='in_progress'?
-    C-->>A: orphaned tasks (if any)
-    A->>C: user_decisions (load patterns)
-    A->>A: Check ARCHITECTURE.md exists?
-    A->>G: gh issue list --label in-progress
+    Note over A,C: Session Start
+    A->>C: 孤立タスク検出
+    A->>C: 判断パターン読込
 
-    alt 孤立タスクあり
-        A->>U: 「前回のタスクが残っています」
-    end
-
-    Note over A: 作業フェーズ
-    A->>C: PUT tasks [id, "in_progress"]
-    A->>C: PUT task_transitions
-    A->>A: 判断が必要？→ user_decisions で予測
-    alt パターンあり
-        A->>A: 予測して実行
-        A->>U: 「過去の判断に基づき X しました」
-    else パターンなし
+    Note over A,U: 作業中
+    A->>C: タスク登録 (in_progress)
+    A->>C: 予測可能？
+    alt 予測して実行
+        A->>U: 結果だけ報告
+    else 初見の判断
         A->>U: 確認
         U->>A: 回答
-        A->>C: PUT user_decisions
+        A->>C: 判断を記録
     end
 
-    Note over A: タスク完了
-    A->>C: PUT tasks [id, "done", evidence]
-    A->>C: PUT task_transitions
-    A->>G: gh issue close --comment
-```
+    Note over A,C: 完了
+    A->>C: done + evidence
 
 ## セットアップ
 

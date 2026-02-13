@@ -190,7 +190,6 @@ foreach ($skill in $skillDirs) {
             if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
                 # symlink が正しいリンク先を指しているか検証
                 if ($item.Target -eq $skill.FullName) {
-                    Write-Host "  Already linked: $($skill.Name)" -ForegroundColor DarkGray
                     continue
                 }
                 else {
@@ -261,7 +260,7 @@ if (Test-Path $repoHooksDir) {
         # Install: set core.hooksPath to repo hooks
         $currentHooksPath = git -C $repoRoot config --get core.hooksPath 2>$null
         if ($currentHooksPath -eq $repoHooksDir) {
-            Write-Host "  Already set: core.hooksPath" -ForegroundColor DarkGray
+            # 設定済み — スキップ
         }
         else {
             git -C $repoRoot config core.hooksPath $repoHooksDir
@@ -291,7 +290,7 @@ if ($repoGeminiMd -and (Test-Path $repoGeminiMd)) {
         if (Test-Path $globalGeminiMd) {
             $item = Get-Item $globalGeminiMd -Force
             if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
-                Write-Host "  Already linked: GEMINI.md" -ForegroundColor DarkGray
+                # 設定済み — スキップ
             }
             else {
                 # Backup existing non-symlink GEMINI.md

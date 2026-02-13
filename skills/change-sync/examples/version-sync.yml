@@ -1,0 +1,33 @@
+# Version Sync Example
+#
+# package.json の version フィールドを変更した際に、
+# ソースコード内の定数と README のバッジを自動同期する例。
+#
+# 使い方: このファイルの内容をプロジェクトルートの .change-sync.yml にコピーする
+
+version: "1"
+
+rules:
+  - name: "version-sync"
+    description: "package.json のバージョンを関連ファイルに同期する"
+    trigger:
+      path: "package.json"
+      watch: ["version"]
+    targets:
+      - path: "src/version.ts"
+        action: "update"
+        instruction: |
+          export const VERSION の値を package.json の version フィールドの値に合わせて更新する。
+          形式: export const VERSION = "x.y.z" as const;
+
+      - path: "README.md"
+        action: "update"
+        instruction: |
+          shields.io バッジの URL に含まれるバージョン番号を新しいバージョンに更新する。
+          例: ![version](https://img.shields.io/badge/version-x.y.z-blue)
+
+      - path: "CHANGELOG.md"
+        action: "flag"
+        instruction: |
+          ファイル先頭の ## [Unreleased] セクションが存在することを確認する。
+          存在しない場合は、最新バージョンの上に ## [Unreleased] セクションを追加する。

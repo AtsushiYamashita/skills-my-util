@@ -1,0 +1,52 @@
+# i18n Sync Example
+#
+# プライマリ言語（日本語）の翻訳ファイルを変更した際に、
+# 他の言語ファイルに未翻訳フラグを立てる例。
+#
+# 使い方: このファイルの内容をプロジェクトルートの .change-sync.yml にコピーする
+
+version: "1"
+
+rules:
+  - name: "i18n-primary-to-others"
+    description: "日本語翻訳の変更を他言語ファイルにフラグとして伝播する"
+    trigger:
+      path: "locales/ja.json"
+    targets:
+      - path: "locales/en.json"
+        action: "flag"
+        instruction: |
+          ja.json で追加または変更されたキーを特定する。
+          en.json の対応するキーについて:
+          - キーが存在しない場合: 日本語の値をプレースホルダーとして追加し、
+            値の先頭に "[TODO:translate] " を付与する
+          - キーが存在する場合: 値は変更せず、キーの直前に
+            "// NEEDS_REVIEW: ja.json updated" コメントを追加する
+            （JSON の場合はキー名を "_todo_<key>" として追加）
+
+      - path: "locales/zh.json"
+        action: "flag"
+        instruction: |
+          ja.json で追加または変更されたキーを特定する。
+          zh.json の対応するキーについて:
+          - キーが存在しない場合: 日本語の値をプレースホルダーとして追加し、
+            値の先頭に "[TODO:translate] " を付与する
+          - キーが存在する場合: 値は変更せず、キー名を "_todo_<key>" として追加する
+
+  - name: "i18n-key-inventory"
+    description: "翻訳キーの一覧を管理ファイルと同期する"
+    trigger:
+      path:
+        - "locales/ja.json"
+        - "locales/en.json"
+        - "locales/zh.json"
+    targets:
+      - path: "docs/i18n-status.md"
+        action: "regenerate"
+        instruction: |
+          全言語ファイルのキーを比較し、翻訳状況の一覧表を Markdown で生成する。
+          形式:
+          | Key | ja | en | zh |
+          |-----|----|----|-----|
+          | greeting | ✅ | ✅ | ❌ |
+          未翻訳のキーには ❌ を表示する。

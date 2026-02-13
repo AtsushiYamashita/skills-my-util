@@ -1,0 +1,35 @@
+# Schema to Types Example
+#
+# DB スキーマファイルを変更した際に、
+# 対応する TypeScript 型定義とバリデーションスキーマを同期する例。
+#
+# 使い方: このファイルの内容をプロジェクトルートの .change-sync.yml にコピーする
+
+version: "1"
+
+rules:
+  - name: "schema-to-types"
+    description: "DB スキーマ変更時に TypeScript 型定義を同期する"
+    trigger:
+      path: "src/db/schema.ts"
+      watch: ["export const", "sqliteTable", "pgTable"]
+    targets:
+      - path: "src/types/models.ts"
+        action: "regenerate"
+        instruction: |
+          schema.ts の各テーブル定義から対応する TypeScript interface を生成する。
+          ルール:
+          - テーブル名を PascalCase に変換して interface 名とする
+          - 各カラムの型を適切な TypeScript 型にマッピングする
+            (text → string, integer → number, boolean → boolean, timestamp → Date)
+          - nullable カラムは `| null` をユニオンする
+          - id カラムには readonly 修飾子を付与する
+
+      - path: "src/validators/schemas.ts"
+        action: "regenerate"
+        instruction: |
+          schema.ts の各テーブル定義から対応する Zod バリデーションスキーマを生成する。
+          ルール:
+          - テーブル名 + "Schema" をスキーマ変数名とする (例: usersSchema)
+          - テーブル名 + "Input" を入力用スキーマ名とする (id, createdAt, updatedAt を除外)
+          - 各カラムの制約 (notNull, length 等) を Zod バリデーションに反映する

@@ -42,8 +42,8 @@ When proposing a command for user approval:
 
 | Auto-run ✅ | Require approval ❌ |
 | --- | --- |
-| `git status`, `git diff`, `git log` | `git commit`, `git push`, `git reset` |
-| `git add` (staging only) | `git checkout`, `git rebase` |
+| `git status`, `git diff`, `git log` | `git push`, `git push --force` |
+| `git add`, `git commit` | `git reset --hard`, `git rebase` |
 | `ls`, `cat`, `head`, `tail`, `find`, `grep` | `rm`, `del`, `Move-Item` |
 | `mkdir`, `New-Item -Directory` | `npm install`, `pip install` |
 | `npm run lint`, `npm run test` | `npm run build`, `npm run deploy` |

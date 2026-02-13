@@ -15,7 +15,7 @@
 .PARAMETER SkillNames
     Optional. Specific skill names to install or remove.
     If omitted with install: all skills are installed.
-    If omitted with -Remove: all symlinked skills are removed.
+    If omitted with -Unlink: all symlinked skills are removed.
 
 .PARAMETER Remove
     Remove symlinks instead of creating them. Combine with -SkillNames to
@@ -28,8 +28,8 @@
     .\scripts\setup.ps1 -t antigravity                          # Install all
     .\scripts\setup.ps1 -t antigravity -s change-sync           # Install one
     .\scripts\setup.ps1 -t antigravity -List                    # Show installed
-    .\scripts\setup.ps1 -t antigravity -Remove -s ui-ux-pro-max # Remove one
-    .\scripts\setup.ps1 -t antigravity -Remove                  # Remove all
+    .\scripts\setup.ps1 -t antigravity -Unlink -s ui-ux-pro-max # Remove one
+    .\scripts\setup.ps1 -t antigravity -Unlink                  # Remove all
 #>
 param(
     [Parameter(Mandatory = $true, Position = 0)]
@@ -42,7 +42,7 @@ param(
     [string[]]$SkillNames,
 
     [Parameter()]
-    [switch]$Remove,
+    [switch]$Unlink,
 
     [Parameter()]
     [Alias("l")]
@@ -143,13 +143,13 @@ function Show-InstalledSkills {
 
 function Get-SkillsToProcess {
     <# パラメータに応じて処理対象スキルを解決する #>
-    $mode = if ($Remove -and $SkillNames) { "RemoveSpecific" }
-    elseif ($Remove) { "RemoveAll" }
+    $mode = if ($Unlink -and $SkillNames) { "UnlinkSpecific" }
+    elseif ($Unlink) { "UnlinkAll" }
     elseif ($SkillNames) { "InstallSpecific" }
     else { "InstallAll" }
 
     switch ($mode) {
-        "RemoveSpecific" {
+        "UnlinkSpecific" {
             $result = @()
             foreach ($name in $SkillNames) {
                 $path = Join-Path $targetDir $name
@@ -158,7 +158,7 @@ function Get-SkillsToProcess {
             }
             return $result
         }
-        "RemoveAll" {
+        "UnlinkAll" {
             if (-not (Test-Path $targetDir)) { return @() }
             return @(Get-ChildItem -Path $targetDir -Directory |
                 Where-Object { $_.Attributes -band [IO.FileAttributes]::ReparsePoint })
@@ -243,10 +243,10 @@ function Sync-GeminiMd {
     $globalGeminiMd = Join-Path $env:USERPROFILE (Join-Path ".gemini" $GLOBAL_CONFIG)
 
     if (-not (Test-Path $repoGeminiMd)) { return }
-    if ($Remove -and $SkillNames) { return }                        # 個別スキル削除時は触らない
+    if ($Unlink -and $SkillNames) { return }                        # 個別スキル削除時は触らない
 
     # ---- Remove mode ----
-    if ($Remove) {
+    if ($Unlink) {
         if (-not (Test-Path $globalGeminiMd)) { return }
         $item = Get-Item $globalGeminiMd -Force
         if (-not ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) { return }
@@ -308,14 +308,14 @@ if (-not (Test-Path $targetDir)) {
 }
 
 foreach ($skill in $skillDirs) {
-    if ($Remove) { Remove-SkillLink $skill }
+    if ($Unlink) { Remove-SkillLink $skill }
     else { Install-SkillLink $skill }
 }
 
-$action = if ($Remove) { "Removed" } else { "Installed" }
+$action = if ($Unlink) { "Removed" } else { "Installed" }
 Write-Host ""
 Write-Host "$action $($skillDirs.Count) skill(s) for $Target" -ForegroundColor Cyan
 Write-Host "Target: $targetDir" -ForegroundColor DarkGray
 
-if (-not $Remove) { Show-CozoDbHint }
+if (-not $Unlink) { Show-CozoDbHint }
 Sync-GeminiMd

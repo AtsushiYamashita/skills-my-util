@@ -21,25 +21,26 @@ Activate when:
 
 Do **not** activate for quick fixes, single-file edits, or questions.
 
+## Pre-flight: Session Sync
+
+Before starting any phase, invoke `task-coordination` Step 4 (Sync):
+
+- Check `gh issue list` for existing in-progress / blocked issues
+- If found → resume from last known state instead of starting fresh
+- If `blocked:human` issues exist → surface to user immediately
+
 ## Workflow
 
-```
-Phase Flow:
-  ┌─ Phase 1: Hearing ──────────┐
-  │  Requirements gathering      │
-  ├─ Phase 2: Architecture ──────┤
-  │  Design & planning           │
-  ├─ Phase 3: Review Board ──────┤
-  │  Multi-expert critique       │
-  ├─ Phase 4: Revision ──────────┤
-  │  Fix review findings         │
-  ├─ CHECKPOINT: User Approval ──┤
-  │  Present design for approval │
-  ├─ Phase 5: Implementation ────┤
-  │  Build it                    │
-  └─ Phase 6: Verification ──────┘
-     Quality confirmation
-```
+1. Phase 1: Hearing → Requirements gathering
+2. **Issue Decomposition** → Create GitHub Issues from Requirements Brief (`task-coordination`)
+3. Phase 2: Architecture → Design & planning
+4. Phase 3: Review Board → Multi-expert critique
+5. Phase 4: Revision → Fix review findings
+6. CHECKPOINT: User Approval
+7. Phase 5: Implementation → Build it
+8. Phase 6: Verification → Quality confirmation
+
+At each phase transition, update issue status via `task-coordination`.
 
 ### Phase 1: Hearing
 
@@ -51,6 +52,7 @@ Goal: Understand what the user truly needs.
 - Ask structured questions (who, what, why, constraints)
 - Identify acceptance criteria
 - **Output**: Requirements Brief (see [handoff-format.md](references/handoff-format.md))
+- After output, invoke `task-coordination` Step 1 (Decompose) to create GitHub Issues from the brief
 
 ### Phase 2: Architecture
 
@@ -134,3 +136,5 @@ The supervisor (default persona) manages transitions:
 2. **Never self-approve** — the review board exists to catch blind spots
 3. **Always checkpoint with user** — before implementation begins
 4. **Log phase transitions** — record what was decided and why
+5. **Update issues on every phase transition** — close completed, move next to in-progress
+6. **Sync on session start** — always run pre-flight check before resuming work

@@ -17,7 +17,7 @@
     If omitted with install: all skills are installed.
     If omitted with -Unlink: all symlinked skills are removed.
 
-.PARAMETER Remove
+.PARAMETER Unlink
     Remove symlinks instead of creating them. Combine with -SkillNames to
     remove specific skills only.
 
@@ -56,10 +56,10 @@ $ErrorActionPreference = "Stop"
 # Constants
 # ===========================================================================
 
-$SKILL_MANIFEST = "SKILL.md"                                              # スキル検出に使うファイル名
-$GLOBAL_CONFIG = "GEMINI.md"                                             # グローバル設定ファイル名
-$BACKUP_SUFFIX = ".bak"                                                  # バックアップの接尾辞
-$COZODB_SKILL = "cozodb"                                                # CozoDB スキルのディレクトリ名
+$SKILL_MANIFEST = "SKILL.md"
+$GLOBAL_CONFIG = "GEMINI.md"
+$BACKUP_SUFFIX = ".bak"
+$COZODB_SKILL = "cozodb"
 $COZODB_URLS = @(
     "https://github.com/AtsushiYamashita/mcp-cozodb"
     "https://github.com/AtsushiYamashita/skills-cozodb-connector"
@@ -86,217 +86,23 @@ if ((Test-Path $gitPath) -and -not (Test-Path $gitPath -PathType Container)) {
 }
 
 # ===========================================================================
-# Helpers
+# Load modules
 # ===========================================================================
 
-function Test-MonorepoSymlink([System.IO.DirectoryInfo]$Item) {
-    <# このリポジトリへの symlink かどうかを判定する #>
-    if (-not ($Item.Attributes -band [IO.FileAttributes]::ReparsePoint)) { return $false }
-    $t = $Item.Target
-    return ($null -ne $t) -and ($t.StartsWith($repoSkillsDir))
-}
-
-# ===========================================================================
-# Functions
-# ===========================================================================
-
-function Write-SkillInfo([System.IO.DirectoryInfo]$Item) {
-    <# 1つのスキルの情報を1行で表示する #>
-    $isSymlink = $Item.Attributes -band [IO.FileAttributes]::ReparsePoint
-    $hasSkillMd = Test-Path (Join-Path $Item.FullName $SKILL_MANIFEST)
-    $isLocal = Test-MonorepoSymlink $Item
-
-    $icon = if ($isLocal) { "📦" } elseif ($isSymlink) { "🔗" } else { "📁" }
-    $source = if ($isLocal) { "monorepo" } elseif ($isSymlink) { "external" } else { "direct" }
-    $skillMdTag = if ($hasSkillMd) { "" } else { " [no $SKILL_MANIFEST]" }
-
-    Write-Host "  $icon $($Item.Name)" -ForegroundColor White -NoNewline
-    Write-Host " ($source)$skillMdTag" -ForegroundColor DarkGray
-}
-
-function Show-InstalledSkills {
-    <# インストール済みスキルの一覧を表示する #>
-    if (-not (Test-Path $targetDir)) {
-        Write-Host "No skills directory found for $Target" -ForegroundColor Yellow
-        Write-Host "Expected: $targetDir" -ForegroundColor DarkGray
-        return
-    }
-
-    $items = Get-ChildItem -Path $targetDir -Directory -Force -ErrorAction SilentlyContinue
-    if (-not $items -or $items.Count -eq 0) {
-        Write-Host "No skills installed for $Target" -ForegroundColor Yellow
-        return
-    }
-
-    Write-Host ""
-    Write-Host "Installed skills for $Target" -ForegroundColor Cyan
-    Write-Host "Path: $targetDir" -ForegroundColor DarkGray
-    Write-Host ""
-
-    foreach ($item in $items) { Write-SkillInfo $item }
-
-    $localCount = @($items | Where-Object { Test-MonorepoSymlink $_ }).Count
-    $externalCount = $items.Count - $localCount
-    Write-Host ""
-    Write-Host "Total: $($items.Count) skill(s) — $localCount monorepo, $externalCount other" -ForegroundColor Cyan
-}
-
-function Get-SkillsToProcess {
-    <# パラメータに応じて処理対象スキルを解決する #>
-    $mode = if ($Unlink -and $SkillNames) { "UnlinkSpecific" }
-    elseif ($Unlink) { "UnlinkAll" }
-    elseif ($SkillNames) { "InstallSpecific" }
-    else { "InstallAll" }
-
-    switch ($mode) {
-        "UnlinkSpecific" {
-            $result = @()
-            foreach ($name in $SkillNames) {
-                $path = Join-Path $targetDir $name
-                if (-not (Test-Path $path)) { Write-Warning "Not installed: $name"; continue }
-                $result += Get-Item $path -Force
-            }
-            return $result
-        }
-        "UnlinkAll" {
-            if (-not (Test-Path $targetDir)) { return @() }
-            return @(Get-ChildItem -Path $targetDir -Directory |
-                Where-Object { $_.Attributes -band [IO.FileAttributes]::ReparsePoint })
-        }
-        "InstallSpecific" {
-            $result = @()
-            foreach ($name in $SkillNames) {
-                $path = Join-Path $repoSkillsDir $name
-                if (-not (Test-Path $path)) { Write-Error "Skill not found in repo: $name (expected at $path)" }
-                $result += Get-Item $path
-            }
-            return $result
-        }
-        "InstallAll" {
-            return @(Get-ChildItem -Path $repoSkillsDir -Directory |
-                Where-Object { Test-Path (Join-Path $_.FullName $SKILL_MANIFEST) })
-        }
-    }
-}
-
-function Install-SkillLink([System.IO.DirectoryInfo]$Skill) {
-    <# 1つのスキルの symlink を作成する（競合処理・フォールバック含む） #>
-    $linkPath = Join-Path $targetDir $Skill.Name
-
-    if (Test-Path $linkPath) {
-        $item = Get-Item $linkPath -Force
-        $isSymlink = $item.Attributes -band [IO.FileAttributes]::ReparsePoint
-
-        if ($isSymlink -and $item.Target -eq $Skill.FullName) { return }  # 既にリンク済み
-
-        if ($isSymlink) {
-            $item.Delete()                                                # 古い symlink → 再作成
-            Write-Host "  Relinked: $($Skill.Name) (was -> $($item.Target))" -ForegroundColor Yellow
-        }
-
-        if (-not $isSymlink) {
-            $backupPath = "${linkPath}${BACKUP_SUFFIX}"                      # 通常ディレクトリ → バックアップ
-            if (Test-Path $backupPath) { Remove-Item $backupPath -Recurse -Force }
-            Move-Item $linkPath $backupPath -Force
-            Write-Host "  Replacing directory with symlink: $($Skill.Name) (backup: $backupPath)" -ForegroundColor Yellow
-        }
-    }
-
-    New-SymlinkOrCopy $linkPath $Skill.FullName "$($Skill.Name) -> $($Skill.FullName)"
-}
-
-function Remove-SkillLink([System.IO.DirectoryInfo]$Skill) {
-    <# 1つのスキルの symlink を削除する #>
-    $linkPath = if ($Skill.FullName.StartsWith($targetDir)) { $Skill.FullName }
-    else { Join-Path $targetDir $Skill.Name }
-
-    if (-not (Test-Path $linkPath)) {
-        Write-Host "  Not found: $($Skill.Name)" -ForegroundColor DarkGray
-        return
-    }
-
-    $item = Get-Item $linkPath -Force
-    if (-not ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
-        Write-Warning "  Skipped (not a symlink): $linkPath"
-        return
-    }
-
-    $item.Delete()
-    Write-Host "  Removed: $($Skill.Name)" -ForegroundColor Yellow
-}
-
-function New-SymlinkOrCopy([string]$LinkPath, [string]$TargetPath, [string]$Label) {
-    <# symlink を作成し、失敗時はコピーにフォールバックする #>
-    try {
-        New-Item -ItemType SymbolicLink -Path $LinkPath -Target $TargetPath | Out-Null
-        Write-Host "  Linked: $Label" -ForegroundColor Green
-    }
-    catch {
-        Copy-Item -Path $TargetPath -Destination $LinkPath -Force
-        Write-Host "  Copied: $Label" -ForegroundColor Cyan
-    }
-}
-
-function Sync-GeminiMd {
-    <# GEMINI.md のグローバル symlink を設定/解除する #>
-    $repoGeminiMd = Join-Path $repoRoot $GLOBAL_CONFIG
-    $globalGeminiMd = Join-Path $env:USERPROFILE (Join-Path ".gemini" $GLOBAL_CONFIG)
-
-    if (-not (Test-Path $repoGeminiMd)) { return }
-    if ($Unlink -and $SkillNames) { return }                        # 個別スキル削除時は触らない
-
-    # ---- Remove mode ----
-    if ($Unlink) {
-        if (-not (Test-Path $globalGeminiMd)) { return }
-        $item = Get-Item $globalGeminiMd -Force
-        if (-not ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) { return }
-        $item.Delete()
-        Write-Host "  Unlinked: GEMINI.md" -ForegroundColor Yellow
-        return
-    }
-
-    # ---- Install mode ----
-    if (Test-Path $globalGeminiMd) {
-        $item = Get-Item $globalGeminiMd -Force
-        if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { return }  # 設定済み
-        $backupPath = "${globalGeminiMd}${BACKUP_SUFFIX}"
-        Move-Item $globalGeminiMd $backupPath -Force
-        New-SymlinkOrCopy $globalGeminiMd $repoGeminiMd "GEMINI.md (backup: $backupPath)"
-        return
-    }
-
-    New-SymlinkOrCopy $globalGeminiMd $repoGeminiMd "GEMINI.md -> $repoGeminiMd"
-}
-
-function Show-CozoDbHint {
-    <# CozoDB 依存のヒントを表示する #>
-    $cozoSkillPath = Join-Path $targetDir $COZODB_SKILL
-    if (Test-Path $cozoSkillPath) {
-        Write-Host "  CozoDB: detected" -ForegroundColor Green
-        return
-    }
-
-    Write-Host ""
-    Write-Host "=== CozoDB not detected ===" -ForegroundColor Yellow
-    Write-Host "  task-state (orphan detection, decision prediction) requires CozoDB." -ForegroundColor DarkGray
-    Write-Host "  To enable:" -ForegroundColor DarkGray
-    for ($i = 0; $i -lt $COZODB_URLS.Count; $i++) {
-        Write-Host "    $($i + 1). $($COZODB_URLS[$i])" -ForegroundColor White
-    }
-    Write-Host "  Then re-run this script." -ForegroundColor DarkGray
-    Write-Host "  (CozoDB is optional. Core skills work without it.)" -ForegroundColor DarkGray
-}
+. "$PSScriptRoot\lib\symlink-ops.ps1"
+. "$PSScriptRoot\lib\skill-discovery.ps1"
+. "$PSScriptRoot\lib\config-sync.ps1"
 
 # ===========================================================================
 # Main
 # ===========================================================================
 
 if ($List) {
-    Show-InstalledSkills
+    Show-InstalledSkills $targetDir $Target $SKILL_MANIFEST $repoSkillsDir
     exit 0
 }
 
-$skillDirs = Get-SkillsToProcess
+$skillDirs = @(Get-SkillsToProcess $Unlink.IsPresent $SkillNames $targetDir $repoSkillsDir $SKILL_MANIFEST)
 if ($skillDirs.Count -eq 0) {
     Write-Warning "No skills found to process."
     exit 0
@@ -308,8 +114,8 @@ if (-not (Test-Path $targetDir)) {
 }
 
 foreach ($skill in $skillDirs) {
-    if ($Unlink) { Remove-SkillLink $skill }
-    else { Install-SkillLink $skill }
+    if ($Unlink) { Remove-SkillLink $skill $targetDir }
+    else { Install-SkillLink $skill $targetDir $BACKUP_SUFFIX }
 }
 
 $action = if ($Unlink) { "Removed" } else { "Installed" }
@@ -317,5 +123,5 @@ Write-Host ""
 Write-Host "$action $($skillDirs.Count) skill(s) for $Target" -ForegroundColor Cyan
 Write-Host "Target: $targetDir" -ForegroundColor DarkGray
 
-if (-not $Unlink) { Show-CozoDbHint }
-Sync-GeminiMd
+if (-not $Unlink) { Show-CozoDbHint $targetDir $COZODB_SKILL $COZODB_URLS }
+Sync-GeminiMd $repoRoot $GLOBAL_CONFIG $BACKUP_SUFFIX $Unlink.IsPresent ($null -ne $SkillNames -and $SkillNames.Count -gt 0)

@@ -188,12 +188,25 @@ foreach ($skill in $skillDirs) {
         if (Test-Path $linkPath) {
             $item = Get-Item $linkPath -Force
             if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
-                Write-Host "  Already linked: $($skill.Name)" -ForegroundColor DarkGray
-                continue
+                # symlink が正しいリンク先を指しているか検証
+                if ($item.Target -eq $skill.FullName) {
+                    Write-Host "  Already linked: $($skill.Name)" -ForegroundColor DarkGray
+                    continue
+                }
+                else {
+                    # 古い/別リポの symlink → 削除して再作成
+                    $item.Delete()
+                    Write-Host "  Relinked: $($skill.Name) (was -> $($item.Target))" -ForegroundColor Yellow
+                }
             }
             else {
-                Write-Warning "  Skipped (path exists, not a symlink): $linkPath"
-                continue
+                # 通常ディレクトリ → バックアップして symlink に置き換え
+                $backupPath = "$linkPath.bak"
+                if (Test-Path $backupPath) {
+                    Remove-Item $backupPath -Recurse -Force
+                }
+                Move-Item $linkPath $backupPath -Force
+                Write-Host "  Replacing directory with symlink: $($skill.Name) (backup: $backupPath)" -ForegroundColor Yellow
             }
         }
         try {

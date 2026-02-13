@@ -81,6 +81,33 @@ Choose format by audience and diagram type:
 | Agent (SKILL.md) | Comparisons | Table |
 | Agent (SKILL.md) | Hierarchies | Indented list |
 
+### Task Planning Visualization
+
+All non-trivial tasks must include a **mermaid Gantt chart** in the task tracking file showing:
+
+- **Planned** tasks, **active** tasks (`active`), and **critical path** (`crit`)
+- **Human gates** — mark with `milestone` to flag where human approval blocks progress
+
+```mermaid
+gantt
+    title Example
+    section Done
+    Requirements       :done, h1, 2024-01-01, 1d
+    section In Progress
+    Design             :active, a1, after h1, 2d
+    section Blocked
+    User approval      :milestone, m1, after a1, 0d
+    section Upcoming
+    Implementation     :crit, i1, after m1, 3d
+```
+
+**Rules:**
+
+- Write the Gantt chart to a **persistent file** (e.g., `task.md`) — survives session interruption
+- On session start, **check for existing task files** — if found, resume from last known state
+- `milestone` gates must name **who** is blocking and **what** they need to decide
+- Update the chart **after each phase completion**, not just at the start
+
 ### Structured Logging
 
 See [references/logging-standards.md](references/logging-standards.md) for the full specification.

@@ -158,6 +158,10 @@ sequenceDiagram
 | [checking-cross-platform](skills/checking-cross-platform/) | OS/シェル互換性 | スクリプト/CI |
 | [change-sync](skills/change-sync/) | 宣言的ファイル変更伝播 | ファイル同期 |
 | [ci-setup](skills/ci-setup/) | GitHub Actions CI 生成、モノレポ最適化 | CI 未整備 or 不足 |
+<<<<<<< feat/cd-firebase
+| [cd-firebase](skills/cd-firebase/) | Firebase Hosting/Functions 自動デプロイ | Firebase CD 未整備 |
+=======
+>>>>>>> main
 
 > 📚 **設計ドキュメント**: [GitHub Issues vs CozoDB の境界](docs/task-state-boundary.md) — ラベルは「分類」、状態は CozoDB、なぜ二重管理を避けるか
 

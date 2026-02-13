@@ -24,7 +24,7 @@
     .\scripts\setup.ps1 -Target antigravity -Remove
 #>
 param(
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $true, Position = 0)]
     [ValidateSet("claude-code", "gemini-cli", "antigravity")]
     [Alias("t")]
     [string]$Target,

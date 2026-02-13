@@ -26,9 +26,4 @@ description: 新しいスキルを skills/ ディレクトリに作成する
    - `examples/` - 参考実装
    - `docs/` - スキル固有のドキュメント
 
-5. コミットする
-
-```powershell
-git add skills/<skill-name>
-git commit -m "feat: add <skill-name> skill"
-```
+5. `/git-commit` ワークフローに従ってコミットする（worktree 内で作業すること）

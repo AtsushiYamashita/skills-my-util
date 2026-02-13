@@ -48,6 +48,7 @@ Search for:
 - Open-source libraries or frameworks
 - Common patterns and architectures used in similar projects
 - Blog posts, case studies, or documentation showing real-world usage
+- **Agent skill ecosystems**: Run `npx skills find [query]` to search [skills.sh](https://skills.sh/) for existing agent skills that cover the same domain — useful for gap analysis and critical comparison with your own skills
 
 Focus on **proven, maintained** solutions. Check: release recency, community size, known issues.
 

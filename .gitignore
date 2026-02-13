@@ -1,5 +1,5 @@
-# Agent rules (local overrides)
-.agent/rules/*
+# Agent rules — personal overrides only
+.agent/rules/senior-mentor.md
 
 # Environment
 .env

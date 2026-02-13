@@ -39,6 +39,7 @@ Read the relevant reference based on the user's question. If both apply, start w
 These apply regardless of scope:
 
 1. **Domain-first** — understand the domain before choosing technology
-2. **Start simple** — monolith-first, monorepo-first, split later when proven necessary
-3. **Spike before commit** — verify assumptions with isolated proof-of-concepts
-4. **Explicit trade-offs** — document what you chose and what you gave up
+2. **Keep units small** — each module, service, or component should have a single responsibility describable in one sentence. If it can't be, it's too big
+3. **Start simple** — monolith-first, monorepo-first, split later when proven necessary
+4. **Spike before commit** — verify assumptions with isolated proof-of-concepts
+5. **Explicit trade-offs** — document what you chose and what you gave up

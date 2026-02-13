@@ -56,6 +56,16 @@ AI エージェント用のスキルを一元管理し、Claude Code / Gemini CL
 - 既存ツールで代替できないか事前検証
 - トレードオフ表による定量的比較と意思決定記録
 
+### [checking-cross-platform](skills/checking-cross-platform/)
+
+コード・スクリプト・ドキュメントの OS/シェル/バージョン互換性をチェックするスキル。
+
+**ユースケース:**
+
+- PowerShell 5.x vs 7+ の構文差異検出（`Join-Path` 3引数問題等）
+- README のインストール手順を複数プラットフォーム対応に
+- CI/CD の OS マトリクス設定チェック
+
 ## ディレクトリ構造
 
 ```

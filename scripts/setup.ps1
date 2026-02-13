@@ -247,6 +247,29 @@ if (-not $Remove) {
     }
 }
 
+# ---- Git hooks ----
+$repoHooksDir = Join-Path (Join-Path $PSScriptRoot "..") "scripts\hooks"
+$repoHooksDir = (Resolve-Path $repoHooksDir -ErrorAction SilentlyContinue).Path
+
+if ($repoHooksDir -and (Test-Path $repoHooksDir)) {
+    if ($Remove -and -not $SkillNames) {
+        # Full remove: reset hooksPath
+        git config --unset core.hooksPath 2>$null
+        Write-Host "  Reset: core.hooksPath" -ForegroundColor Yellow
+    }
+    elseif (-not $Remove) {
+        # Install: set core.hooksPath to repo hooks
+        $currentHooksPath = git config --get core.hooksPath 2>$null
+        if ($currentHooksPath -eq $repoHooksDir) {
+            Write-Host "  Already set: core.hooksPath" -ForegroundColor DarkGray
+        }
+        else {
+            git config core.hooksPath $repoHooksDir
+            Write-Host "  Set: core.hooksPath -> $repoHooksDir" -ForegroundColor Green
+        }
+    }
+}
+
 # ---- GEMINI.md global link ----
 $repoGeminiMd = Join-Path (Join-Path $PSScriptRoot "..") "GEMINI.md"
 $repoGeminiMd = (Resolve-Path $repoGeminiMd -ErrorAction SilentlyContinue).Path

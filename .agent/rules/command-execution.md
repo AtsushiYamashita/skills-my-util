@@ -30,3 +30,15 @@
 ⚠️ `git commit` は SafeToAutoRun: true でもプラットフォームがブロックする。これは Antigravity の制約であり、ルールでは回避不可。
 
 When in doubt, require approval.
+
+## Git Guard（git commit / git push の前提条件）
+
+`git commit` または `git push` を実行する**前に**、以下を**必ず**確認する:
+
+1. **`git branch --show-current` で現在のブランチを確認**
+2. **main にいる → コミットしない。** worktree を作成して移動する
+3. **worktree 内にいることを確認** — `git worktree list` で検証
+
+**main でのコミットは例外なく禁止。** typo 修正でも worktree を使う。
+
+→ 詳細手順は `/git-commit` ワークフローを参照

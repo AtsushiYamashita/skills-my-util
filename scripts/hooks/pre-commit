@@ -1,0 +1,22 @@
+#!/bin/sh
+# pre-commit hook: main ブランチへの直接コミットを禁止する
+#
+# Why: エージェント・人間問わず、main への直コミットを構造的に防止する。
+#       すべての変更は feature ブランチ → Draft PR → マージの流れを通す。
+#
+# Bypass: git commit --no-verify (緊急時のみ。理由をコミットメッセージに記載すること)
+
+branch=$(git branch --show-current)
+
+if [ "$branch" = "main" ]; then
+    echo ""
+    echo "❌ Direct commits to 'main' are not allowed."
+    echo ""
+    echo "   Use a worktree:"
+    echo "     git worktree add ../\$(basename \$(pwd))-feat-xxx -b feat/xxx"
+    echo ""
+    echo "   Or bypass (emergency only):"
+    echo "     git commit --no-verify -m \"reason for exception\""
+    echo ""
+    exit 1
+fi

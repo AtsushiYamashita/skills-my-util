@@ -1,0 +1,16 @@
+#!/bin/sh
+# pre-push hook: main ブランチからの push に警告を出す
+#
+# Why: pre-commit の --no-verify 回避や、rebase 後の意図しない push を検出する。
+#       push は完全にブロックはしない（マージ後の push は正当なため）が、
+#       直接コミットの push は pre-commit で既にブロック済み。
+
+branch=$(git branch --show-current)
+
+if [ "$branch" = "main" ]; then
+    # main からの push 自体は正当（merge commit の push など）
+    # ただし直コミットが含まれていないか確認を促す
+    echo ""
+    echo "⚠️  Pushing to main. Ensure this is a merge/rebase result, not a direct commit."
+    echo ""
+fi

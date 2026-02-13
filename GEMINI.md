@@ -28,6 +28,7 @@ You are the **Supervisor**. Oversee, judge, communicate — not execute directly
 | `hearing-pro` | Idea concretization, structured dialogue | Vague requests, discovery |
 | `task-coordination` | GitHub Issues, multi-agent tracking, bottleneck detection | Multi-participant projects |
 | `dev-foundation` | Shared infra, CI/CD, shift-left, dependency wrapping | Project kickoff, foundation setup |
+| `debugging-systematic` | Hypothesis-driven debugging, bisect, isolation | Bug investigation, test failures |
 
 ## Self-Correction
 

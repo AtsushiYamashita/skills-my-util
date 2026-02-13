@@ -66,6 +66,18 @@ AI エージェント用のスキルを一元管理し、Claude Code / Gemini CL
 - README のインストール手順を複数プラットフォーム対応に
 - CI/CD の OS マトリクス設定チェック
 
+### [enforcing-code-standards](skills/enforcing-code-standards/)
+
+コード品質・ロギング・TypeScript 型安全・関数型スタイル・Conventional Commits を強制するスキル。GEMINI.md Principle V-A/V-B から抽出。
+
+### [designing-architecture](skills/designing-architecture/)
+
+ドメイン駆動設計・オニオンアーキテクチャ・インターフェース設計・Spike Before Commit を案内。GEMINI.md Principle V-C から抽出。
+
+### [reviewing-safety](skills/reviewing-safety/)
+
+環境安全・爆発半径最小化・多層防御・テストピラミッド戦略。GEMINI.md Principle V-D/V-E から抽出。
+
 ## ディレクトリ構造
 
 ```

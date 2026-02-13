@@ -73,12 +73,16 @@ Create labels if they don't exist. See [references/gh-commands.md](references/gh
 
 When starting work on a task:
 
-1. Assign yourself and set `status:in-progress`
-2. Work the task
-3. On completion: close the issue with a comment summarizing what was done
-4. If blocked: set `status:blocked` + appropriate `blocked:*` label + comment explaining what's needed
+1. worktree を作成: `git worktree add ../{repo}-feat-issue-<number> -b feat/issue-<number>`
+2. Assign yourself and set `status:in-progress`
+3. Work the task
+4. On completion: Draft PR を作成 → close the issue → `git worktree remove`
+5. If blocked: set `status:blocked` + appropriate `blocked:*` label + comment explaining what's needed
 
-```
+```bash
+# worktree を作成（メインディレクトリは常に main）
+git worktree add ../{repo}-feat-issue-<number> -b feat/issue-<number>
+
 gh issue edit <number> --add-label "status:in-progress" --remove-label "status:planned"
 gh issue close <number> --comment "Done: <summary>"
 ```
@@ -110,7 +114,7 @@ Session Sync 時は GitHub Issues **と** CozoDB 両方を確認する。CozoDB 
 After Step 1 or when updating tasks, review the dependency chain:
 
 - Identify tasks where **human approval** gates downstream work → label `blocked:human` + `critical-path`
-- Suggest **parallel work** — tasks that don't depend on the blocked item
+- Suggest **parallel work** — tasks that don't depend on the blocked item（各タスクは別 worktree で作業）
 - Ask the user: "These items are waiting on you: [list]. Can you unblock any now?"
 
 ## Anti-Patterns

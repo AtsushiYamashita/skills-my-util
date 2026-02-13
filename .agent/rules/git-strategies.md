@@ -55,11 +55,11 @@ main ← マージだけ。直接コミットしない
 
 ### 手順
 
-1. **作業開始 → まずブランチを切る**: `git checkout -b feat/xxx`
-2. **1ブランチ = 1目的**（機能、修正、リファクタ）
+1. **作業開始 → worktree を作成**: `git worktree add ../{repo}-{branch} -b feat/xxx`
+2. **1 worktree = 1 ブランチ = 1 目的**（機能、修正、リファクタ）
 3. 完了 → **Draft PR を作成**（マージは人間が判断）
-4. レビュー後 → main にマージ + ブランチ削除
-5. main に直接コミットしていい例外: **typo 修正のみ**
+4. レビュー後 → main にマージ + `git worktree remove` + ブランチ削除
+5. main に直接コミットする例外は**ない**。typo でもブランチを切る
 
 ### Draft PR ルール
 
@@ -73,8 +73,8 @@ main ← マージだけ。直接コミットしない
 | --- | --- |
 | 新機能の開発 | `feat/add-xxx` |
 | バグ修正 | `fix/resolve-xxx` |
+| ドキュメント修正 | `docs/fix-xxx` |
 | 実験的な変更 | `experiment/try-xxx` |
-| main で直接やっていい | typo 修正、1行の docs 変更のみ |
 
 ### マージ前チェック
 
@@ -86,9 +86,9 @@ main ← マージだけ。直接コミットしない
 
 `git commit` を実行する前に、以下を**毎回**確認する：
 
-1. `git branch --show-current` で現在のブランチを確認
-2. main にいる → **コミットしない**。ブランチを切ってから再開
-3. ブランチ名と作業内容が一致しているか確認
+1. **worktree 内にいるか？** — `git worktree list` でカレントディレクトリが worktree であることを確認
+2. **メインディレクトリにいる → コミットしない**。worktree を作成してから再開
+3. **ブランチ名と作業内容が一致しているか？** — `git branch --show-current` で確認
 
 | 作業内容 | 正しいブランチ | 間違い |
 | --- | --- | --- |
@@ -97,7 +97,7 @@ main ← マージだけ。直接コミットしない
 | ドキュメント更新 | `docs/update-xxx` | `main` |
 | リファクタ | `refactor/xxx` | `main` |
 
-**ブランチ名が違う場合**: 作業を stash → 正しいブランチに移動 → stash pop
+**間違った worktree にいる場合**: 正しい worktree のディレクトリに移動する（stash/checkout ではない）
 
 ## Commit Timing（いつコミットするか）
 
@@ -107,42 +107,48 @@ main ← マージだけ。直接コミットしない
 2. **方向転換する前** — 戻れるセーブポイントを作る
 3. **1つの作業単位が完了した**とき — 中途半端にしない
 
-## Multi-Agent: Git Worktree
+## Git Worktree（デフォルトの作業方法）
 
-複数エージェントが同じリポジトリで並列作業する場合、**worktree** を使う。
+すべての作業は **worktree** で行う。メインの作業ディレクトリは常に main を指す。
+
+### 命名規則
+
+`../{repo}-{branch-suffix}` — リポジトリ名 + ブランチのサフィックス
 
 ```powershell
-# Agent A: feat/skill-update を作業
-git worktree add ../skills-my-util-A feat/skill-update
-
-# Agent B: fix/setup-bug を作業
-git worktree add ../skills-my-util-B fix/setup-bug
+# 例: skills-my-util リポジトリで作業する場合
+git worktree add ../skills-my-util-feat-skill-update -b feat/skill-update
+git worktree add ../skills-my-util-fix-setup-bug -b fix/setup-bug
 ```
 
 ### Worktree ルール
 
 | ルール | 理由 |
 | --- | --- |
-| 1 worktree = 1 ブランチ = 1 エージェント | コンテキスト混在を防ぐ |
+| 1 worktree = 1 ブランチ = 1 目的 | コンテキスト混在を防ぐ |
 | 作業完了後は `git worktree remove` | ゴミを残さない |
 | main の worktree は作らない | main は受け取るだけ |
 | worktree 内で別ブランチに checkout しない | worktree の意味がなくなる |
 
-### 並列作業フロー
+### 作業フロー
 
 ```mermaid
 flowchart LR
-    M[main] -->|branch| A[feat/xxx\nAgent A]
-    M -->|branch| B[fix/yyy\nAgent B]
+    M["main（メインディレクトリ）"] -->|worktree add| A[feat/xxx\nworktree A]
+    M -->|worktree add| B[fix/yyy\nworktree B]
     A -->|Draft PR| M
     B -->|Draft PR| M
+    A -->|worktree remove| M
+    B -->|worktree remove| M
 ```
 
 ## Anti-Patterns
 
-- ❌ ブランチを切らずに main で大規模変更
+- ❌ main に直接コミット（typo でも例外なし）
+- ❌ メインディレクトリで `git checkout -b` して作業（worktree を使う）
 - ❌ 動作確認前にコミット（壊れた状態を保存しない）
 - ❌ 長時間コミットしない（クラッシュ時にすべて失う）
 - ❌ WIP コミットを大量に積む（後でまとめることを前提にしない）
 - ❌ エージェントが PR をマージする（人間の判断を奪わない）
 - ❌ 1つの worktree で複数ブランチを切り替える
+- ❌ PR済みブランチを使い回して別の変更を積む

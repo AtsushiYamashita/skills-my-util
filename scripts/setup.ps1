@@ -206,3 +206,42 @@ $action = if ($Remove) { "Removed" } else { "Installed" }
 Write-Host ""
 Write-Host "$action $($skillDirs.Count) skill(s) for $Target" -ForegroundColor Cyan
 Write-Host "Target: $targetDir" -ForegroundColor DarkGray
+
+# ---- GEMINI.md global link ----
+$repoGeminiMd = Join-Path (Join-Path $PSScriptRoot "..") "GEMINI.md"
+$repoGeminiMd = (Resolve-Path $repoGeminiMd -ErrorAction SilentlyContinue).Path
+$globalGeminiMd = Join-Path $env:USERPROFILE (Join-Path ".gemini" "GEMINI.md")
+
+if ($repoGeminiMd -and (Test-Path $repoGeminiMd)) {
+    if ($Remove -and -not $SkillNames) {
+        # Full remove: unlink GEMINI.md too
+        if (Test-Path $globalGeminiMd) {
+            $item = Get-Item $globalGeminiMd -Force
+            if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+                $item.Delete()
+                Write-Host "  Unlinked: GEMINI.md" -ForegroundColor Yellow
+            }
+        }
+    }
+    elseif (-not $Remove) {
+        # Install: link GEMINI.md
+        if (Test-Path $globalGeminiMd) {
+            $item = Get-Item $globalGeminiMd -Force
+            if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+                Write-Host "  Already linked: GEMINI.md" -ForegroundColor DarkGray
+            }
+            else {
+                # Backup existing non-symlink GEMINI.md
+                $backupPath = "$globalGeminiMd.bak"
+                Move-Item $globalGeminiMd $backupPath -Force
+                New-Item -ItemType SymbolicLink -Path $globalGeminiMd -Target $repoGeminiMd | Out-Null
+                Write-Host "  Linked: GEMINI.md (backup: $backupPath)" -ForegroundColor Green
+            }
+        }
+        else {
+            New-Item -ItemType SymbolicLink -Path $globalGeminiMd -Target $repoGeminiMd | Out-Null
+            Write-Host "  Linked: GEMINI.md -> $repoGeminiMd" -ForegroundColor Green
+        }
+    }
+}
+

@@ -12,7 +12,7 @@
 .PARAMETER Target
     Target platform: claude-code, gemini-cli, or antigravity.
 
-.PARAMETER Skills
+.PARAMETER SkillNames
     Optional. Specific skill names to install. If omitted, all skills are installed.
 
 .PARAMETER Remove
@@ -20,7 +20,7 @@
 
 .EXAMPLE
     .\scripts\setup.ps1 -Target gemini-cli
-    .\scripts\setup.ps1 -Target claude-code -Skills change-sync
+    .\scripts\setup.ps1 -Target claude-code -SkillNames change-sync
     .\scripts\setup.ps1 -Target antigravity -Remove
 #>
 param(
@@ -30,7 +30,8 @@ param(
     [string]$Target,
 
     [Parameter()]
-    [string[]]$Skills,
+    [Alias("s")]
+    [string[]]$SkillNames,
 
     [Parameter()]
     [switch]$Remove
@@ -41,19 +42,19 @@ $ErrorActionPreference = "Stop"                                          # エ�
 
 # ---- Platform paths ----
 $platformPaths = @{                                                      # 各プラットフォームのスキル配置先
-    "claude-code" = Join-Path $env:USERPROFILE ".claude" "skills"
-    "gemini-cli"  = Join-Path $env:USERPROFILE ".gemini" "skills"
-    "antigravity" = Join-Path $env:USERPROFILE ".gemini" "antigravity" "skills"
+    "claude-code" = Join-Path (Join-Path $env:USERPROFILE ".claude") "skills"
+    "gemini-cli"  = Join-Path (Join-Path $env:USERPROFILE ".gemini") "skills"
+    "antigravity" = Join-Path (Join-Path (Join-Path $env:USERPROFILE ".gemini") "antigravity") "skills"
 }
 
 $targetDir = $platformPaths[$Target]
-$repoSkillsDir = Join-Path $PSScriptRoot ".." "skills"                   # このリポジトリの skills/ ディレクトリ
+$repoSkillsDir = Join-Path (Join-Path $PSScriptRoot "..") "skills"       # このリポジトリの skills/ ディレクトリ
 $repoSkillsDir = (Resolve-Path $repoSkillsDir).Path
 
 # ---- Discover skills ----
-if ($Skills) {
+if ($SkillNames) {
     $skillDirs = @()
-    foreach ($name in $Skills) {
+    foreach ($name in $SkillNames) {
         $path = Join-Path $repoSkillsDir $name
         if (-not (Test-Path $path)) {
             Write-Error "Skill not found: $name (expected at $path)"

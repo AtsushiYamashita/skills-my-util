@@ -214,6 +214,26 @@ Write-Host ""
 Write-Host "$action $($skillDirs.Count) skill(s) for $Target" -ForegroundColor Cyan
 Write-Host "Target: $targetDir" -ForegroundColor DarkGray
 
+# ---- CozoDB dependency check ----
+if (-not $Remove) {
+    $cozoSkillPath = Join-Path $targetDir "cozodb-connector"
+    $hasCozoSkill = Test-Path $cozoSkillPath
+    
+    if (-not $hasCozoSkill) {
+        Write-Host ""
+        Write-Host "=== CozoDB not detected ===" -ForegroundColor Yellow
+        Write-Host "  task-state (orphan detection, decision prediction) requires CozoDB." -ForegroundColor DarkGray
+        Write-Host "  To enable:" -ForegroundColor DarkGray
+        Write-Host "    1. https://github.com/AtsushiYamashita/mcp-cozodb" -ForegroundColor White
+        Write-Host "    2. https://github.com/AtsushiYamashita/skills-cozodb-connector" -ForegroundColor White
+        Write-Host "  Then re-run this script." -ForegroundColor DarkGray
+        Write-Host "  (CozoDB is optional. Core skills work without it.)" -ForegroundColor DarkGray
+    }
+    else {
+        Write-Host "  CozoDB: detected" -ForegroundColor Green
+    }
+}
+
 # ---- GEMINI.md global link ----
 $repoGeminiMd = Join-Path (Join-Path $PSScriptRoot "..") "GEMINI.md"
 $repoGeminiMd = (Resolve-Path $repoGeminiMd -ErrorAction SilentlyContinue).Path
@@ -241,13 +261,25 @@ if ($repoGeminiMd -and (Test-Path $repoGeminiMd)) {
                 # Backup existing non-symlink GEMINI.md
                 $backupPath = "$globalGeminiMd.bak"
                 Move-Item $globalGeminiMd $backupPath -Force
-                New-Item -ItemType SymbolicLink -Path $globalGeminiMd -Target $repoGeminiMd | Out-Null
-                Write-Host "  Linked: GEMINI.md (backup: $backupPath)" -ForegroundColor Green
+                try {
+                    New-Item -ItemType SymbolicLink -Path $globalGeminiMd -Target $repoGeminiMd | Out-Null
+                    Write-Host "  Linked: GEMINI.md (backup: $backupPath)" -ForegroundColor Green
+                }
+                catch {
+                    Copy-Item -Path $repoGeminiMd -Destination $globalGeminiMd -Force
+                    Write-Host "  Copied: GEMINI.md (backup: $backupPath)" -ForegroundColor Cyan
+                }
             }
         }
         else {
-            New-Item -ItemType SymbolicLink -Path $globalGeminiMd -Target $repoGeminiMd | Out-Null
-            Write-Host "  Linked: GEMINI.md -> $repoGeminiMd" -ForegroundColor Green
+            try {
+                New-Item -ItemType SymbolicLink -Path $globalGeminiMd -Target $repoGeminiMd | Out-Null
+                Write-Host "  Linked: GEMINI.md -> $repoGeminiMd" -ForegroundColor Green
+            }
+            catch {
+                Copy-Item -Path $repoGeminiMd -Destination $globalGeminiMd -Force
+                Write-Host "  Copied: GEMINI.md -> $repoGeminiMd" -ForegroundColor Cyan
+            }
         }
     }
 }

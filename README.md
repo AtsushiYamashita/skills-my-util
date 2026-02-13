@@ -108,6 +108,14 @@ sequenceDiagram
 > `setup.ps1` はシンボリックリンクを使用するため、リポジトリ内の編集が即座に反映されます。
 > Windows では管理者権限 or 開発者モードが必要です。
 
+### CozoDB 依存（オプション）
+
+タスク状態追跡・判断予測・孤立タスク検出は [MCP CozoDB Server](https://github.com/AtsushiYamashita/mcp-cozodb) + [CozoDB Connector Skill](https://github.com/AtsushiYamashita/skills-cozodb-connector) に依存します。
+
+- **未導入の場合**: `setup.ps1` が自動検出し、CozoDB 関連ルールをスキップします
+- **導入したい場合**: 上記2リポをセットアップ後、再度 `setup.ps1` を実行してください
+- **CozoDB 無しでも動作**: スキルとルールの基本機能は CozoDB なしで利用可能です
+
 ### 対応プラットフォーム
 
 | Target        | Skill Path                                   |
@@ -154,13 +162,19 @@ sequenceDiagram
 | `/session-end` | セッション終了時のコンテキスト永続化 |
 | `/new-skill` | 新規スキル作成 |
 
-### CozoDB テーブル
+### CozoDB テーブル（要: [mcp-cozodb](https://github.com/AtsushiYamashita/mcp-cozodb)）
 
 | テーブル | 用途 |
 | --- | --- |
 | `tasks` | タスク状態管理（evidence 必須 done） |
 | `task_transitions` | 遷移の監査証跡 |
 | `user_decisions` | ユーザー判断パターン → 予測 |
+
+> [!TIP]
+> CozoDB 未導入の場合、これらの機能は無効になります。導入手順:
+> 1. [mcp-cozodb](https://github.com/AtsushiYamashita/mcp-cozodb) をセットアップ
+> 2. [skills-cozodb-connector](https://github.com/AtsushiYamashita/skills-cozodb-connector) をインストール
+> 3. `setup.ps1` を再実行
 
 ## ディレクトリ構造
 

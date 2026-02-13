@@ -62,6 +62,16 @@ Design metrics, security, and observability from the start:
 - **Pure vs impure**: Separate deterministic functions from I/O/state mutation
 - **Domain vs generic**: Separate business logic from data transformation utilities
 
+### External Dependency Wrapping
+
+Never call external services, APIs, or CLI tools directly from feature code:
+
+- **Wrap** — create an adapter with a clean interface that hides the external API
+- **Test** — unit test the wrapper with mocked external calls
+- **Depend on the interface** — feature code imports the wrapper, never the raw SDK/client
+
+This enables: swapping implementations, testing in isolation, and containing blast radius when external APIs change.
+
 ### Documentation Comments
 
 All exported items must include standard doc comments (JSDoc, docstrings, etc.):

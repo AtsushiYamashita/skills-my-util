@@ -38,6 +38,7 @@ Audit the project against these categories:
 | Category | Items to check |
 | --- | --- |
 | **Shared code** | Common types, utility libraries, API contracts (OpenAPI, gRPC proto) |
+| **External dependencies** | Cloud services, third-party APIs, CLI tools that need wrappers |
 | **CI/CD** | Build pipeline, branch strategy, deploy automation, artifact storage |
 | **Test infra** | Test runner, fixture patterns, mock/stub strategy, E2E environment |
 | **Dev environment** | Dev container / devbox, linter + formatter config, editor settings |
@@ -65,6 +66,13 @@ Build foundations in priority order. For each item:
 - Invoke `reviewing-safety` for security-related foundations
 - Invoke `designing-architecture` for structural decisions
 
+**External dependency wrapping** (for each external service/API/CLI identified in Inventory):
+
+1. **Spike** — build a minimal proof-of-concept to verify the API behaves as expected
+2. **Wrap** — create an adapter/wrapper with a clean interface that hides the external API
+3. **Test** — write unit tests for the wrapper (mock the external service)
+4. **Integrate** — feature code depends on the wrapper interface, never on the raw API
+
 ### Step 4: Validate
 
 Before declaring the foundation complete:
@@ -80,3 +88,5 @@ Before declaring the foundation complete:
 - ❌ Over-engineering foundations before requirements are clear
 - ❌ Copy-pasting config between repos instead of sharing
 - ❌ Manual quality checks that should be automated
+- ❌ Calling external APIs directly without a wrapper
+- ❌ Skipping spikes for unfamiliar external services

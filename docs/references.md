@@ -1,0 +1,6 @@
+# References
+
+- Overview - Agent Skills
+  - https://agentskills.io/home
+- Google Antigravity Documentation
+  - https://antigravity.google/docs/skills

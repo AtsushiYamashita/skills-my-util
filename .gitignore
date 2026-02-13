@@ -1,0 +1,17 @@
+# Agent rules (local overrides)
+.agent/rules/*
+
+# Environment
+.env
+
+# Temporary files
+docs/temp
+skills/*/docs/temp
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Memory logs
+MEMORY/

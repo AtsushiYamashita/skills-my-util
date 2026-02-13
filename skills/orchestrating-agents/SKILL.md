@@ -34,7 +34,6 @@ Before starting any phase, invoke `task-coordination` Step 4 (Sync):
 - Query `tasks` for `in_progress` → 孤立タスクがあればユーザーに確認
 - Query `user_decisions` for past patterns → 類似の質問をする前に過去の判断を参照し、不要な確認を省略する
 
-
 ## Workflow
 
 1. Phase 1: Hearing → Requirements gathering

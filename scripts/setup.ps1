@@ -79,10 +79,10 @@ $targetDir = $platformPaths[$Target]
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $repoSkillsDir = Join-Path $repoRoot "skills"
 
-# Worktree 内からの実行を拒否 — symlink の指す先と $repoSkillsDir がずれるため
+# Worktree guard: symlink targets diverge from $repoSkillsDir in worktrees
 $gitPath = Join-Path $repoRoot ".git"
 if ((Test-Path $gitPath) -and -not (Test-Path $gitPath -PathType Container)) {
-    Write-Error "setup.ps1 はメインリポジトリから実行してください（worktree 内では実行できません）。"
+    Write-Error "setup.ps1 must be run from the main repository, not from a worktree."
 }
 
 # ===========================================================================

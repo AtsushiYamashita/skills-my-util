@@ -59,7 +59,7 @@ $ErrorActionPreference = "Stop"
 $SKILL_MANIFEST = "SKILL.md"                                              # スキル検出に使うファイル名
 $GLOBAL_CONFIG = "GEMINI.md"                                             # グローバル設定ファイル名
 $BACKUP_SUFFIX = ".bak"                                                  # バックアップの接尾辞
-$COZODB_SKILL = "cozodb-connector"                                      # CozoDB スキルのディレクトリ名
+$COZODB_SKILL = "cozodb"                                                # CozoDB スキルのディレクトリ名
 $COZODB_URLS = @(
     "https://github.com/AtsushiYamashita/mcp-cozodb"
     "https://github.com/AtsushiYamashita/skills-cozodb-connector"

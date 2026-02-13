@@ -37,8 +37,9 @@ Before starting any phase, invoke `task-coordination` Step 4 (Sync):
 4. Phase 3: Review Board → Multi-expert critique
 5. Phase 4: Revision → Fix review findings
 6. CHECKPOINT: User Approval
-7. Phase 5: Implementation → Build it
-8. Phase 6: Verification → Quality confirmation
+7. **Phase 5: Foundation** → Set up shared dev infrastructure (`dev-foundation`)
+8. Phase 6: Implementation → Build features
+9. Phase 7: Verification → Quality confirmation
 
 At each phase transition, update issue status via `task-coordination`.
 
@@ -106,7 +107,15 @@ Present to user:
 
 **Wait for user confirmation before proceeding.**
 
-### Phase 5: Implementation
+### Phase 5: Foundation
+
+Goal: Establish shared development infrastructure before feature work.
+
+- Invoke `dev-foundation` (Inventory → Prioritize → Implement → Validate)
+- Ensure CI, test harness, linter, and shift-left checks are operational
+- **Output**: Working dev environment + CI pipeline
+
+### Phase 6: Implementation
 
 **Persona**: [Worker Agent](references/personas/worker.md)
 
@@ -117,7 +126,7 @@ Goal: Build exactly what was approved.
 - Invoke `enforcing-code-standards` and `checking-cross-platform` as needed
 - **Output**: Working code + commit(s)
 
-### Phase 6: Verification
+### Phase 7: Verification
 
 **Persona**: [Reviewer Agent](references/personas/reviewer.md)
 

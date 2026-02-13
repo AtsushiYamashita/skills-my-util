@@ -20,11 +20,13 @@
 | Auto-run ✅ | Require approval ❌ |
 | --- | --- |
 | `git status`, `git diff`, `git log` | `git push`, `git push --force` |
-| `git add`, `git commit` | `git reset --hard`, `git rebase` |
-| `ls`, `cat`, `head`, `tail`, `find`, `grep` | `rm`, `del`, `Move-Item` |
-| `mkdir`, `New-Item -Directory` | `npm install`, `pip install` |
-| `npm run lint`, `npm run test` | `npm run build`, `npm run deploy` |
-| `gh issue list`, `gh pr list` | `gh issue create`, `gh pr create` |
-| `Get-Content`, `Test-Path` | Any command with `--force` |
+| `git add` | `git commit` ⚠️ platform enforced |
+| `ls`, `cat`, `head`, `tail`, `find`, `grep` | `git reset --hard`, `git rebase` |
+| `mkdir`, `New-Item -Directory` | `rm`, `del`, `Move-Item` |
+| `npm run lint`, `npm run test` | `npm install`, `pip install` |
+| `gh issue list`, `gh pr list` | `npm run build`, `npm run deploy` |
+| `Get-Content`, `Test-Path` | `gh issue create`, `gh pr create` |
+
+⚠️ `git commit` は SafeToAutoRun: true でもプラットフォームがブロックする。これは Antigravity の制約であり、ルールでは回避不可。
 
 When in doubt, require approval.

@@ -18,7 +18,7 @@
     .\scripts\new-skill.ps1 -SkillName "my-awesome-skill"
 #>
 param(
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $true, Position = 0)]
     [ValidatePattern('^[a-z0-9][a-z0-9-]*$')]
     [string]$SkillName
 )
@@ -32,7 +32,8 @@ $TemplateRepo = "https://github.com/AtsushiYamashita/my-skills-template-20260201
 $TempDir = Join-Path $env:TEMP "skill-template-$([guid]::NewGuid().ToString('N').Substring(0,8))"
 
 # ---- Pre-checks ----
-if (Test-Path $SkillDir) {                                            # 既存スキルとの衝突を防止
+if (Test-Path $SkillDir) {
+    # 既存スキルとの衝突を防止
     Write-Error "Error: skills/$SkillName already exists."
     exit 1
 }
@@ -51,8 +52,8 @@ New-Item -ItemType Directory -Path $SkillDir -Force | Out-Null        # skills/<
 
 # スキルに必要なファイルのみコピー（テンプレートのメタ設定は除外）
 $filesToCopy = @(
-    @{ Src = "SKILL.md";    Dst = "SKILL.md" }
-    @{ Src = "docs";        Dst = "docs" }
+    @{ Src = "SKILL.md"; Dst = "SKILL.md" }
+    @{ Src = "docs"; Dst = "docs" }
 )
 
 foreach ($file in $filesToCopy) {

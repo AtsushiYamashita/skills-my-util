@@ -21,50 +21,6 @@ Activate when:
 3. Setting up project tooling (linters, formatters, CI)
 4. Providing code in documentation or examples
 
-## Methods and Procedures
-
-### Reliable Methods First
-
-Propose the most reliable and reproducible method first, considering target OS, default shell, and tool compatibility.
-
-### Executable Scripts
-
-Provide multi-line commands as executable script files, not copy-paste blocks. Each line must include a trailing comment **in Japanese**. State permanent changes the script makes (files, env vars, services, packages).
-
-### Command Proposal
-
-When proposing a command for user approval:
-
-- **Before the command**, explain in Japanese: what it does, why it's needed, and what it changes
-- Keep the explanation to **1-2 lines** — the user needs to decide quickly
-
-**SafeToAutoRun classification:**
-
-| Auto-run ✅ | Require approval ❌ |
-| --- | --- |
-| `git status`, `git diff`, `git log` | `git push`, `git push --force` |
-| `git add`, `git commit` | `git reset --hard`, `git rebase` |
-| `ls`, `cat`, `head`, `tail`, `find`, `grep` | `rm`, `del`, `Move-Item` |
-| `mkdir`, `New-Item -Directory` | `npm install`, `pip install` |
-| `npm run lint`, `npm run test` | `npm run build`, `npm run deploy` |
-| `gh issue list`, `gh pr list` | `gh issue create`, `gh pr create` |
-| `Get-Content`, `Test-Path` | Any command with `--force` |
-
-When in doubt, require approval.
-
-### Persist Context
-
-Use available memory/persistence tools to store user context. Prevent repetitive re-explanation.
-
-### Session Log
-
-At session end, write to `MEMORY/YYMMDD.md`:
-
-- **Action**: What was done
-- **Impact**: Results (positive or negative)
-- **Cause Analysis**: Why correct or what caused failure
-- **Prevention**: Recurrence prevention measures
-
 ## Code Quality Checklist
 
 Apply these rules to all code:
@@ -112,32 +68,6 @@ Choose format by audience and diagram type:
 | Agent (SKILL.md) | Comparisons | Table |
 | Agent (SKILL.md) | Hierarchies | Indented list |
 
-### Task Planning Visualization
-
-All non-trivial tasks must include a **mermaid Gantt chart** in the task tracking file showing:
-
-- **Planned** tasks, **active** tasks (`active`), and **critical path** (`crit`)
-- **Human gates** — mark with `milestone` to flag where human approval blocks progress
-
-```mermaid
-gantt
-    title Example
-    section Done
-    Requirements       :done, h1, 2024-01-01, 1d
-    section In Progress
-    Design             :active, a1, after h1, 2d
-    section Blocked
-    User approval      :milestone, m1, after a1, 0d
-    section Upcoming
-    Implementation     :crit, i1, after m1, 3d
-```
-
-**Rules:**
-
-- Write the Gantt chart to a **persistent file** (e.g., `task.md`) — survives session interruption
-- On session start, **check for existing task files** — if found, resume from last known state
-- `milestone` gates must name **who** is blocking and **what** they need to decide
-- Update the chart **after each phase completion**, not just at the start
 
 ### Structured Logging
 
@@ -167,12 +97,6 @@ Quick rules:
 
 Comment only _why_, not _what_. No conversational comments. No TODO without issue reference.
 
-### Conventional Commits
-
-Format: `type(scope): description`
-
-- `feat`, `fix`, `refactor`, `docs`, `chore`, `test`, `ci`
-- Workspace conventions override this default
 
 ### Technology Decision Records
 

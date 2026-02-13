@@ -97,6 +97,14 @@ gh issue list --label "critical-path" --state open --json number,title
 
 **If blocked:human issues exist** — surface them immediately to the user.
 
+### CozoDB State Layer
+
+GitHub Issues = **計画**（何をやるか）。CozoDB = **実行状態**（実際にどうなったか）。
+
+タスクの状態遷移は CozoDB `tasks` / `task_transitions` に記録する。詳細は `.agent/rules/task-state.md` を参照。
+
+Session Sync 時は GitHub Issues **と** CozoDB 両方を確認する。CozoDB に `in_progress` のまま残っているタスクがあれば、ユーザーにサーフェスする。
+
 ## Bottleneck Detection
 
 After Step 1 or when updating tasks, review the dependency chain:

@@ -15,7 +15,7 @@ Establish shared development infrastructure before writing feature code.
 
 Activate when:
 
-1. Starting a new project after architecture design is approved
+1. ワークスペースに `ARCHITECTURE.md`、lint 設定、テスト基盤のいずれかが欠けている
 2. Onboarding an existing codebase that lacks standardized tooling
 3. Adding a new service/repo to an existing system
 

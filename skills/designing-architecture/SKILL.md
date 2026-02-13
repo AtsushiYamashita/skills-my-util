@@ -15,7 +15,7 @@ Architecture decision guide at two levels: project-internal structure and cross-
 
 Activate when:
 
-1. Creating a new project or module
+1. `ARCHITECTURE.md` が存在しない、または設計文書が未整備
 2. Deciding on project structure or layering
 3. Deciding where a feature lives (server/client, which repo, which service)
 4. Evaluating monolith vs microservices, monorepo vs multi-repo

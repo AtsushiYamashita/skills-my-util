@@ -78,6 +78,10 @@ AI エージェント用のスキルを一元管理し、Claude Code / Gemini CL
 
 環境安全・爆発半径最小化・多層防御・テストピラミッド戦略。GEMINI.md Principle V-D/V-E から抽出。
 
+### [orchestrating-agents](skills/orchestrating-agents/)
+
+Supervisor/Worker パターンでタスクを分解・委任するスキル。ヒアリング→設計→レビューボード（工学・ドメイン・セキュリティ3視点）→修正→ユーザー承認→実装→検証の6フェーズ。
+
 ## ディレクトリ構造
 
 ```

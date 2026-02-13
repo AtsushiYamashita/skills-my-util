@@ -53,6 +53,19 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 # ===========================================================================
+# Constants
+# ===========================================================================
+
+$SKILL_MANIFEST = "SKILL.md"                                              # スキル検出に使うファイル名
+$GLOBAL_CONFIG = "GEMINI.md"                                             # グローバル設定ファイル名
+$BACKUP_SUFFIX = ".bak"                                                  # バックアップの接尾辞
+$COZODB_SKILL = "cozodb-connector"                                      # CozoDB スキルのディレクトリ名
+$COZODB_URLS = @(
+    "https://github.com/AtsushiYamashita/mcp-cozodb"
+    "https://github.com/AtsushiYamashita/skills-cozodb-connector"
+)
+
+# ===========================================================================
 # Paths
 # ===========================================================================
 
@@ -90,12 +103,12 @@ function Test-MonorepoSymlink([System.IO.DirectoryInfo]$Item) {
 function Write-SkillInfo([System.IO.DirectoryInfo]$Item) {
     <# 1つのスキルの情報を1行で表示する #>
     $isSymlink = $Item.Attributes -band [IO.FileAttributes]::ReparsePoint
-    $hasSkillMd = Test-Path (Join-Path $Item.FullName "SKILL.md")
+    $hasSkillMd = Test-Path (Join-Path $Item.FullName $SKILL_MANIFEST)
     $isLocal = Test-MonorepoSymlink $Item
 
     $icon = if ($isLocal) { "📦" } elseif ($isSymlink) { "🔗" } else { "📁" }
     $source = if ($isLocal) { "monorepo" } elseif ($isSymlink) { "external" } else { "direct" }
-    $skillMdTag = if ($hasSkillMd) { "" } else { " [no SKILL.md]" }
+    $skillMdTag = if ($hasSkillMd) { "" } else { " [no $SKILL_MANIFEST]" }
 
     Write-Host "  $icon $($Item.Name)" -ForegroundColor White -NoNewline
     Write-Host " ($source)$skillMdTag" -ForegroundColor DarkGray
@@ -161,7 +174,7 @@ function Get-SkillsToProcess {
         }
         "InstallAll" {
             return @(Get-ChildItem -Path $repoSkillsDir -Directory |
-                Where-Object { Test-Path (Join-Path $_.FullName "SKILL.md") })
+                Where-Object { Test-Path (Join-Path $_.FullName $SKILL_MANIFEST) })
         }
     }
 }
@@ -182,7 +195,7 @@ function Install-SkillLink([System.IO.DirectoryInfo]$Skill) {
         }
 
         if (-not $isSymlink) {
-            $backupPath = "$linkPath.bak"                                 # 通常ディレクトリ → バックアップ
+            $backupPath = "${linkPath}${BACKUP_SUFFIX}"                      # 通常ディレクトリ → バックアップ
             if (Test-Path $backupPath) { Remove-Item $backupPath -Recurse -Force }
             Move-Item $linkPath $backupPath -Force
             Write-Host "  Replacing directory with symlink: $($Skill.Name) (backup: $backupPath)" -ForegroundColor Yellow
@@ -226,8 +239,8 @@ function New-SymlinkOrCopy([string]$LinkPath, [string]$TargetPath, [string]$Labe
 
 function Sync-GeminiMd {
     <# GEMINI.md のグローバル symlink を設定/解除する #>
-    $repoGeminiMd = Join-Path $repoRoot "GEMINI.md"
-    $globalGeminiMd = Join-Path $env:USERPROFILE (Join-Path ".gemini" "GEMINI.md")
+    $repoGeminiMd = Join-Path $repoRoot $GLOBAL_CONFIG
+    $globalGeminiMd = Join-Path $env:USERPROFILE (Join-Path ".gemini" $GLOBAL_CONFIG)
 
     if (-not (Test-Path $repoGeminiMd)) { return }
     if ($Remove -and $SkillNames) { return }                        # 個別スキル削除時は触らない
@@ -246,7 +259,7 @@ function Sync-GeminiMd {
     if (Test-Path $globalGeminiMd) {
         $item = Get-Item $globalGeminiMd -Force
         if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { return }  # 設定済み
-        $backupPath = "$globalGeminiMd.bak"
+        $backupPath = "${globalGeminiMd}${BACKUP_SUFFIX}"
         Move-Item $globalGeminiMd $backupPath -Force
         New-SymlinkOrCopy $globalGeminiMd $repoGeminiMd "GEMINI.md (backup: $backupPath)"
         return
@@ -257,7 +270,7 @@ function Sync-GeminiMd {
 
 function Show-CozoDbHint {
     <# CozoDB 依存のヒントを表示する #>
-    $cozoSkillPath = Join-Path $targetDir "cozodb-connector"
+    $cozoSkillPath = Join-Path $targetDir $COZODB_SKILL
     if (Test-Path $cozoSkillPath) {
         Write-Host "  CozoDB: detected" -ForegroundColor Green
         return
@@ -267,8 +280,9 @@ function Show-CozoDbHint {
     Write-Host "=== CozoDB not detected ===" -ForegroundColor Yellow
     Write-Host "  task-state (orphan detection, decision prediction) requires CozoDB." -ForegroundColor DarkGray
     Write-Host "  To enable:" -ForegroundColor DarkGray
-    Write-Host "    1. https://github.com/AtsushiYamashita/mcp-cozodb" -ForegroundColor White
-    Write-Host "    2. https://github.com/AtsushiYamashita/skills-cozodb-connector" -ForegroundColor White
+    for ($i = 0; $i -lt $COZODB_URLS.Count; $i++) {
+        Write-Host "    $($i + 1). $($COZODB_URLS[$i])" -ForegroundColor White
+    }
     Write-Host "  Then re-run this script." -ForegroundColor DarkGray
     Write-Host "  (CozoDB is optional. Core skills work without it.)" -ForegroundColor DarkGray
 }

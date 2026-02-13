@@ -57,8 +57,44 @@ cozo_put task_transitions [[id, now, "in_progress", "blocked", "理由: <何に/
 cozo_put task_transitions [[id, now, "in_progress", "abandoned", "理由: <なぜ放棄するか>"]]
 ```
 
+## User Decision Prediction
+
+ユーザーの判断を**予測して先に動く**。不要な確認で作業を止めない。
+
+### 原則
+
+1. **質問する前に**過去の判断パターンを CozoDB `user_decisions` で確認する
+2. 一貫したパターンがあれば → **質問せず実行** + 事後報告
+3. パターンが不明 or 矛盾 → 確認する
+4. 確認した結果を記録し、次回の予測精度を上げる
+
+### 予測ロジック
+
+```
+cozo_query "?[context, answer, count(answer)] := *user_decisions[_, context, _, answer, _, _]"
+```
+
+| 条件 | 行動 |
+| --- | --- |
+| 同じ context で同じ answer が3回以上 | 予測して実行。「過去の判断に基づき X しました」 |
+| answer がバラバラ | 確認する |
+| 初めての context | 確認する → 結果を記録 |
+
+### 記録（予測のためのデータ収集）
+
+確認して回答を得たときに記録:
+
+```
+cozo_put user_decisions [[id, context, question, answer, timestamp, outcome]]
+```
+
+- **context**: カテゴリ（例: "ルール配置", "スキル追加", "コミット判断"）
+- **answer**: ユーザーの回答そのまま
+- **outcome**: その判断がどうなったか
+
 ## Anti-Patterns
 
 - ❌ evidence なしで `done` にする — 「やったつもり」の原因
 - ❌ `in_progress` のまま別タスクを始める — 「やりかけ放置」の原因
 - ❌ ステータス変更時に `task_transitions` を記録しない — 監査証跡がなくなる
+- ❌ 答えが明白な質問で作業を止める — 過去の判断パターンを確認してから聞く

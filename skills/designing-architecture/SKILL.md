@@ -31,6 +31,7 @@ Do **not** activate for:
 | --- | --- |
 | How to structure layers, domain model, interfaces within a project? | [internal-design.md](references/internal-design.md) |
 | Where to draw boundaries between services, repos, server/client? | [system-boundaries.md](references/system-boundaries.md) |
+| How to structure a repo so AI agents can navigate efficiently? | [ai-native-repo.md](references/ai-native-repo.md) |
 
 Read the relevant reference based on the user's question. If both apply, start with system boundaries (macro), then internal design (micro).
 

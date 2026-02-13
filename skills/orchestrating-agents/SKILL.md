@@ -126,16 +126,17 @@ Goal: Build exactly what was approved.
 - Invoke `enforcing-code-standards` and `checking-cross-platform` as needed
 - **Output**: Working code + commit(s)
 
-### Phase 7: Verification
+### Phase 7: Verification (Eval)
 
 **Persona**: [Reviewer Agent](references/personas/reviewer.md)
 
-Goal: Confirm the implementation matches the design.
+Goal: Prove the implementation satisfies the spec.
 
-- Verify acceptance criteria from Phase 1
-- Run quality gate checks
-- Invoke `reviewing-safety` for security-sensitive code
-- **Output**: Verification Report
+- **Spec match** — each acceptance criterion from Phase 1 maps to a passing test or demo
+- **Regression** — existing tests still pass
+- **Quality gates** — lint, type-check, security scan all green
+- **Failure mode analysis** — identify edge cases the implementation doesn't handle, document as known limitations
+- **Output**: Verification Report (pass/fail per criterion + known limitations)
 
 ## Supervisor Rules
 

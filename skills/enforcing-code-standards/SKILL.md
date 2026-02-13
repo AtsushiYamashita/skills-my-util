@@ -68,7 +68,6 @@ Choose format by audience and diagram type:
 | Agent (SKILL.md) | Comparisons | Table |
 | Agent (SKILL.md) | Hierarchies | Indented list |
 
-
 ### Structured Logging
 
 See [references/logging-standards.md](references/logging-standards.md) for the full specification.
@@ -97,9 +96,18 @@ Quick rules:
 
 Comment only _why_, not _what_. No conversational comments. No TODO without issue reference.
 
-
 ### Technology Decision Records
 
 Document tool/library/framework choices in `docs/decisions/` using ADR format:
 
 - Topic, alternatives with pros/cons, chosen option, rationale, trade-offs
+
+### AI-Native Code Structure
+
+AI（エージェント含む）が読み書きしやすいコードを書く:
+
+- **高モジュール化** — 1ファイル1責務。300行を超えたら分割を検討
+- **明示的な型** — 暗黙の型推論より明示的な型定義を優先
+- **自己文書化** — 関数名・変数名で意図が伝わる命名。略語を避ける
+- **Contract-first** — インターフェース/型定義を先に書き、実装は後
+- **テストが仕様** — テストコードが正式な仕様書として機能するレベルに

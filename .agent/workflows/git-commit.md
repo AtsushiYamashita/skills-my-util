@@ -75,20 +75,3 @@ git log --oneline -3
 gh pr create --draft --title "type(scope): what" --body "## What`n`n## Why`n`n## Testing"
 ```
 
-## Post-merge（PR マージ確認後）
-
-マージを確認したら **即座に** worktree を片付ける。放置すると「どの worktree が何？」問題が起きる。
-
-// turbo
-10. マージ済み PR の worktree を一覧する
-
-```powershell
-git worktree list
-```
-
-11. マージ済みの worktree を削除する
-
-```powershell
-git worktree remove <worktree-path>
-git branch -d <branch-name>
-```

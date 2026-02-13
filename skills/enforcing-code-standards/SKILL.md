@@ -39,19 +39,6 @@ Design metrics, security, and observability from the start:
 - **Pure vs impure**: Separate deterministic functions from I/O/state mutation
 - **Domain vs generic**: Separate business logic from data transformation utilities
 
-関数はテスト容易性で切り分ける：
-
-| 分類 | 特徴 | テスト方法 |
-| --- | --- | --- |
-| **Pure（副作用なし）** | 入力→出力のみ、外部依存なし | 直接テスト可能 |
-| **Impure（副作用あり）** | ファイル I/O、API 呼び出し、状態変更 | 依存をインジェクションしてテスト |
-
-設計原則：
-
-- ロジックは Pure 関数に寄せる（テストしやすい）
-- I/O は薄い Impure ラッパーに閉じ込める
-- Impure 関数は依存（ファイルシステム、HTTP クライアント等）を引数で受け取る
-
 ### External Dependency Wrapping
 
 Never call external services, APIs, or CLI tools directly from feature code:
@@ -104,36 +91,6 @@ Quick rules:
 - Never mutate arguments or shared state
 - Prefer plain objects with interfaces over classes
 - Use `export`/non-export for public/private boundaries
-
-### Nesting Budget（スコープ行数制限）
-
-ネストが深いコードは読めない。以下の行数制限を超えたら関数に切り出す：
-
-| スコープ深度 | 最大行数 | 例 |
-| --- | --- | --- |
-| 第1（関数トップレベル） | **30行** | `function doSomething() { ... }` |
-| 第2（if / for / try 内） | **15行** | `if (cond) { ... }` |
-| 第3（ネストの中のネスト） | **3行** | `if (a) { if (b) { /* 3行まで */ } }` |
-| 第4以上 | **禁止** | → 説明関数に切り出す |
-
-対策の優先順位：
-
-1. **早期リターン** — `if (!cond) return` でネストを減らす
-2. **説明変数** — 条件式に名前をつけて可読性を上げる
-3. **説明関数** — ブロックの中身を関数に抽出する
-4. **switch** — elseif チェーンは説明変数 + switch に変換
-
-条件式の複雑度：`&&` / `||` が **3つ以上** 連なったら説明変数に切り出す。
-
-```typescript
-// ❌ Bad
-if (user.isActive && user.role === 'admin' && !user.isBanned && org.plan === 'pro') { ... }
-
-// ✅ Good
-const isAuthorizedAdmin = user.isActive && user.role === 'admin' && !user.isBanned;
-const isProOrg = org.plan === 'pro';
-if (isAuthorizedAdmin && isProOrg) { ... }
-```
 
 ### High-Value Comments Only
 

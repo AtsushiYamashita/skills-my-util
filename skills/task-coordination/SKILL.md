@@ -88,14 +88,20 @@ gh issue close <number> --comment "Done: <summary>"
 
 ### Step 4: Sync (Session Start)
 
-On every session start, check for existing project state:
+On every session start, check for existing project state.
+See [references/gh-commands.md](references/gh-commands.md) for full command patterns.
 
 ```bash
-gh issue list --state open --json number,title,labels
-gh issue list --label "blocked:human" --json number,title
+gh issue list --state open --json number,title,labels,assignees --limit 50
 ```
 
-**If open issues exist** — check CozoDB for detailed status (if available).
+**Issue-driven チェック:**
+
+1. **自分に assign されている Issue** → 優先着手（前回の続き）
+2. **`blocked:human` Issue** → ユーザーに即報告
+3. **`priority:high` Issue** → 着手候補として提示
+4. **今の作業と関連する Issue** → リンクまたは重複確認
+5. **新規 Issue を作る前** → 既存 Issue との重複を `gh search issues` でチェック
 
 **If blocked:human issues exist** — surface them immediately to the user.
 

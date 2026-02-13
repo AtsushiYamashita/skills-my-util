@@ -71,8 +71,15 @@ All exported items must include standard doc comments (JSDoc, docstrings, etc.):
 
 ### Diagrams in Docs
 
-- Human-facing documents (README, design docs, ADRs): use **mermaid** — GitHub renders natively, structured and maintainable
-- Agent-facing files (SKILL.md): ASCII art is acceptable — renders inline as plain text in context
+Choose format by audience and diagram type:
+
+| Audience | Diagram type | Format |
+| --- | --- | --- |
+| Human (README, design docs, ADRs) | All | **Mermaid** |
+| Agent (SKILL.md) | Dependencies / graphs | Graph DB query (Datalog) |
+| Agent (SKILL.md) | Steps / flows | Numbered list |
+| Agent (SKILL.md) | Comparisons | Table |
+| Agent (SKILL.md) | Hierarchies | Indented list |
 
 ### Structured Logging
 

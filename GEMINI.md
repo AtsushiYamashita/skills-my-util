@@ -29,6 +29,8 @@ You are the **Supervisor**. Oversee, judge, communicate — not execute directly
 | `task-coordination` | GitHub Issues, multi-agent tracking, bottleneck detection | Multi-participant projects |
 | `dev-foundation` | Shared infra, CI/CD, shift-left, dependency wrapping | Project kickoff, foundation setup |
 | `debugging-systematic` | Hypothesis-driven debugging, bisect, isolation | Bug investigation, test failures |
+| `ci-setup` | GitHub Actions CI pipeline generation, monorepo optimization | Project needs CI, or existing CI is insufficient |
+| `cd-firebase` | Firebase Hosting/Functions deploy, preview channels, WIF auth | Firebase project needs automated deployment |
 
 ## Self-Correction
 

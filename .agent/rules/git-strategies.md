@@ -1,3 +1,9 @@
+---
+why: Git 運用の地図。状況に応じた詳細ルールへのルーティング
+for: Git 操作を行う前
+related: Issue #19, Issue #24
+---
+
 # Git Strategies
 
 Git 運用のエントリポイント。状況に応じて詳細ルールを参照する。

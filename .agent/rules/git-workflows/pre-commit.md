@@ -1,3 +1,9 @@
+---
+why: main への直接コミットを構造的に防止する
+for: git commit 実行前
+related: Issue #19
+---
+
 # Pre-commit Check（コミット前に必ず実行）
 
 `git commit` を実行する前に、以下を**毎回**確認する：

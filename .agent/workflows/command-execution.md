@@ -1,4 +1,11 @@
-# Command Execution Rules
+---
+description: コマンド実行時の安全性判断と SafeToAutoRun テーブル
+why: 破壊的操作の自動実行を防止し、安全なコマンドの自動実行を許可する
+for: コマンド提案・実行時
+related: Issue #24
+---
+
+# Command Execution
 
 ## Reliable Methods First
 
@@ -31,14 +38,6 @@
 
 When in doubt, require approval.
 
-## Git Guard（git commit / git push の前提条件）
+## Git Guard
 
-`git commit` または `git push` を実行する**前に**、以下を**必ず**確認する:
-
-1. **`git branch --show-current` で現在のブランチを確認**
-2. **main にいる → コミットしない。** worktree を作成して移動する
-3. **worktree 内にいることを確認** — `git worktree list` で検証
-
-**main でのコミットは例外なく禁止。** typo 修正でも worktree を使う。
-
-→ 詳細手順は `/git-commit` ワークフローを参照
+→ `.agent/rules/git-workflows/pre-commit.md` を参照

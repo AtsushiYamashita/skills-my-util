@@ -1,6 +1,13 @@
+---
+description: 非自明なタスクに Gantt chart を作成し、進捗を可視化する
+why: タスクの全体像・ボトルネック・人間ゲートを明示し、セッション中断に耐える
+for: 非自明なタスクの開始時
+related: Issue #24
+---
+
 # Task Planning
 
-非自明なタスクには **mermaid Gantt chart** をタスクファイルに含める:
+非自明なタスクには **mermaid Gantt chart** をタスクファイルに含める：
 
 - **Planned**, **active** (`active`), **critical path** (`crit`)
 - **Human gates** — `milestone` で人間承認のボトルネックを明示

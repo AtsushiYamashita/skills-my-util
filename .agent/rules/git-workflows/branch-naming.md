@@ -1,3 +1,9 @@
+---
+why: ブランチ名でIssue・作業種別をトレーサブルにする
+for: ブランチ作成時
+related: Issue #19
+---
+
 # Branch Naming（ブランチ命名規則）
 
 基本形式: `<type>/<descriptive-name>`

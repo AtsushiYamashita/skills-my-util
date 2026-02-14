@@ -1,3 +1,9 @@
+---
+why: プロジェクト横断の命名規則と永続化ルール
+for: コミット時、セッション終了時
+related: Issue #24
+---
+
 # Conventions
 
 ## Conventional Commits

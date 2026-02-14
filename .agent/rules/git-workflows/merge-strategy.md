@@ -1,3 +1,9 @@
+---
+why: main の品質を保護し、人間のマージ判断権を確保する
+for: PR作成・マージ時
+related: Issue #19
+---
+
 # Merge Strategy（マージ戦略）
 
 ## 最重要ルール

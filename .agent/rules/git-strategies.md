@@ -80,14 +80,26 @@ main ← マージだけ。直接コミットしない
 - PR 説明に「何をしたか」「なぜ」「テスト結果」を含める
 - マージは**人間が判断**する。エージェントはマージしない
 
-### ブランチを切るタイミング
+### ブランチ命名規則
 
-| 状況 | ブランチ |
-| --- | --- |
-| 新機能の開発 | `feat/add-xxx` |
-| バグ修正 | `fix/resolve-xxx` |
-| ドキュメント修正 | `docs/fix-xxx` |
-| 実験的な変更 | `experiment/try-xxx` |
+基本形式: `<type>/<descriptive-name>`
+Issue がある場合: `<type>/issue-<N>-<short-desc>`（推奨）
+
+```
+feat/issue-19-git-restructure   ← Issue 紐付きの機能開発
+fix/typo-readme                 ← Issue なしの軽微な修正
+rule/issue-19-git-restructure   ← ルール変更
+refactor/extract-helpers        ← リファクタ
+```
+
+| type | 用途 | 例 |
+| --- | --- | --- |
+| `feat` | 新機能の開発 | `feat/issue-19-git-restructure` |
+| `fix` | バグ修正 | `fix/resolve-login-error` |
+| `docs` | ドキュメント修正 | `docs/update-readme` |
+| `refactor` | リファクタ | `refactor/extract-helpers` |
+| `rule` | ルール・設定変更 | `rule/atomic-ki` |
+| `experiment` | 実験的な変更 | `experiment/try-new-approach` |
 
 ### マージ前チェック
 
@@ -95,30 +107,9 @@ main ← マージだけ。直接コミットしない
 - [ ] コミット履歴が意味単位に分割されている
 - [ ] 不要なデバッグコードが残っていない
 
-## Pre-commit Check（コミット前に必ず実行）
+## コミット手順
 
-`git commit` を実行する前に、以下を**毎回**確認する：
-
-1. **worktree 内にいるか？** — `git worktree list` でカレントディレクトリが worktree であることを確認
-2. **メインディレクトリにいる → コミットしない**。worktree を作成してから再開
-3. **ブランチ名と作業内容が一致しているか？** — `git branch --show-current` で確認
-
-| 作業内容 | 正しいブランチ | 間違い |
-| --- | --- | --- |
-| 新機能追加 | `feat/add-xxx` | `main`, `fix/xxx` |
-| バグ修正 | `fix/resolve-xxx` | `main`, `feat/xxx` |
-| ドキュメント更新 | `docs/update-xxx` | `main` |
-| リファクタ | `refactor/xxx` | `main` |
-
-**間違った worktree にいる場合**: 正しい worktree のディレクトリに移動する（stash/checkout ではない）
-
-## Commit Timing（いつコミットするか）
-
-以下のタイミングで即コミット：
-
-1. **動作確認が取れた**とき — 壊れない状態を保護する
-2. **方向転換する前** — 戻れるセーブポイントを作る
-3. **1つの作業単位が完了した**とき — 中途半端にしない
+→ `/git-commit` ワークフローに従う。Pre-commit チェック、コミットタイミングの判断もワークフローに含まれる。
 
 ## Git Worktree（デフォルトの作業方法）
 

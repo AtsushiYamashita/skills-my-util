@@ -29,6 +29,7 @@ git worktree add ../$(Split-Path -Leaf (Get-Location))-feat-xxx -b feat/xxx
 | バグ修正 | `fix/` |
 | ドキュメント | `docs/` |
 | リファクタ | `refactor/` |
+| ルール・設定 | `rule/` |
 
 // turbo
 4. このブランチに既存の PR がある場合、**マージ/クローズ済みでないか**確認する
@@ -59,6 +60,14 @@ git add <file-or-directory>
 ```powershell
 git commit -m "type(scope): what" -m "Why: なぜこの変更が必要か"
 ```
+
+## Commit Timing（いつコミットするか）
+
+以下のタイミングで即コミット：
+
+1. **動作確認が取れた**とき — 壊れない状態を保護する
+2. **方向転換する前** — 戻れるセーブポイントを作る
+3. **1つの作業単位が完了した**とき — 中途半端にしない
 
 ## Post-commit
 

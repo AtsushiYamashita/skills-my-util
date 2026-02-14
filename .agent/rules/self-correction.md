@@ -1,3 +1,9 @@
+---
+why: エラー発生時の自己修正と報告ルール
+for: エラーやバックトラック発生時
+related: Issue #24
+---
+
 $ErrorReportingLevel="fail"
 
 | Level | Trigger |

@@ -1,5 +1,8 @@
 ---
 trigger: always_on
+why: エージェントの全行動を律する不変条件。判断に迷ったらここに戻る
+for: 常時（always_on）
+related: Issue #24
 ---
 
 Execution-Led Safety

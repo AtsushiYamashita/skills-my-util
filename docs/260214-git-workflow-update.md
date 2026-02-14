@@ -45,38 +45,44 @@ skills-my-util にそのまま適用すべきか？
 Issue がある場合は `<type>/issue-<N>-<short-desc>` を推奨。
 例: `feat/issue-19-git-restructure`, `fix/typo-readme`
 
-#### 3. 階層分割 — 現時点では不要
+#### 3. 階層分割 — ~~不要~~ → **必要（修正）**
 
-**Why not:**
-- 現在の `git-strategies.md` は168行。1ファイルで十分読める
-- 分割すると参照コストが上がる（エージェントが複数ファイルを `view_file` する必要）
-- `git-commit.md` ワークフローは既に分離済み
+**初回判断（誤り）:** 168行で分割不要、YAGNI。
 
-**反論:** Issue は分割を提案している。
-→ Issue の提案は「将来の拡張余地」のための構造。
-  現時点で肥大化していないなら、YAGNIの原則で据え置き。
-  200行を超えたら分割を検討する。
+**見落としていた Why:**
+Issue #19 の階層構造提案は **Agent swarm（複数エージェントの並行作業）** を前提としていた。
+Issue にも計画にも Why が明記されず、双方が Action だけを見ていた。
 
-**結論:** 分割しない。Issue にコメントで理由を記載。
+**なぜ階層分割が必要か:**
 
-#### 4. 全体ワークフロー — 追加する
+1. **タイミング別の参照制限** — ブランチ作成時は `branch-naming.md` だけ読めばよい
+2. **並行作業の安全性** — 複数エージェントが「今の自分のフェーズで何を守るべきか」を明確にする
+3. **エントリポイントが状況ルーティング** — 「今何をしている？」→ 該当ファイルだけ参照
 
-Issue の「ワークフロー素案」はセッション全体の流れを定義している：
-1. pull → 2. 古いworktree掃除 → 3. Issue確認/作成 → 4. ブランチ/worktree作成 → 5. 作業 → 6. commit → 7. push & PR
+**結論:** Issue #19 の提案通り、階層構造に分割する。
 
-現状の `git-commit.md` はステップ6のみ。全体フローがない。
-→ `git-session.md` ワークフローとして追加する。
+#### 4. 全体ワークフロー — 追加する（実装済み）
 
-## 変更計画
+`git-session.md` ワークフローとして追加済み。
 
-### 変更1: ブランチ命名規則を `git-strategies.md` に追記
-- L83-90 のブランチテーブルを更新
-- `<type>/<descriptive-name>` を基本、Issue ある場合は `issue-<N>-<desc>` を推奨
+## 教訓（Why-first）
 
-### 変更2: `git-session.md` ワークフローを新規作成
-- セッション開始（pull, cleanup）→ 作業 → 終了（push, PR）の全体フロー
-- `git-commit.md` は既存のまま、session から参照
+互いに Action に目を向けすぎて Why を共有できなかった。
+→ KI `why-first-communication` に記録済み。
 
-### 変更3: Issue #19 にコメント
-- 階層分割を見送る理由を記載
-- 完了した項目を報告
+## 変更計画（修正版）
+
+### 変更1: ブランチ命名規則の追記（実装済み）
+
+### 変更2: `git-strategies.md` を階層分割
+
+- `git-strategies.md` → エントリポイント（状況振り分けのみ）
+- `git-workflows/branch-naming.md` — ブランチ命名規則
+- `git-workflows/pre-commit.md` — コミット前チェック
+- `git-workflows/merge-strategy.md` — マージ戦略・PR ルール
+- `git-workflows/worktree.md` — Worktree 運用ルール
+
+### 変更3: `git-session.md` 新規作成（実装済み）
+
+### 変更4: `git-commit.md` の同期（実装済み）
+
